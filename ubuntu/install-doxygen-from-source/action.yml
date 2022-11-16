@@ -16,6 +16,7 @@ runs:
         ref: ${{ inputs.ref }}
         path: doxygen_src
     - name: Build & Install doxygen
+      shell: bash
       run: |
         mkdir doxygen_build
         cd doxygen_build
