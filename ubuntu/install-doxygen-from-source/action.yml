@@ -1,0 +1,25 @@
+name: 'Build & Install Doxygen From Source'
+description: 'Checkouts the specified doxygen commit from GitHub, then builds and installs it to the default location'
+author: 'oblivioncth'
+inputs:
+  ref:
+    required: false
+    description: The commit, tag, or branch of Doxygen to use
+    default: master
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout doxygen
+      uses: actions/checkout@v3
+      with:
+        repository: 'doxygen/doxygen'
+        ref: ${{ inputs.ref }}
+        path: doxygen_src
+    - name: Build & Install doxygen
+      run: |
+        mkdir doxygen_build
+        cd doxygen_build
+        cmake -G "Unix Makefiles" ${{ github.workspace }}/doxygen_src
+        make
+        make install
+        
