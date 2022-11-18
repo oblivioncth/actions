@@ -1,0 +1,42 @@
+name: 'Ensure that CMake project version is greater than last tag'
+description: 'Checkouts the repository and ensures the project specified in its root CMakeLists.txt is set to a version higher than the most recent tag version'
+author: 'oblivioncth'
+inputs:
+  ver_match_start:
+    required: true
+    description: The text that precedes the version number to find
+  ver_match_end:
+    required: true
+    description: The text that follows the version number to find
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout Project
+      uses: actions/checkout@v3
+      with:
+        path: ob_temp/project
+        fetch-depth: 0 # Required for tag search to find previous tag
+    - name: Compare versions
+      shell: pwsh
+      run: |
+        cd "${{ github.workspace }}/ob_temp/project"
+        echo "Checking for version tags..."
+        if(git tag -l v*.*){
+          echo "Version tags found, comparing new and last tag..."
+          $last_tag_version = $(git describe --abbrev=0 --match v*.*).substring(1)
+          echo "Last tag version: ${last_tag_version}"
+          $project_lists = Get-Content -Raw CMakeLists.txt
+          if(!($project_lists -match '(?<=${{ env.ver_match_start }})(.*)(?=${{ env.ver_match_end }})')){
+            throw "Could not get project version!"
+          }
+          $new_tag_version = $Matches[1].Trim()
+          echo "New tag version: ${new_tag_version}"
+          if(!([version]$new_tag_version -gt [version]$last_tag_version)){
+            throw "Project version was not increased to be above previous tagged version!"
+          }
+        }
+        else{
+          echo "No existing version tags present. Proceeding..."
+        }
+
+        
