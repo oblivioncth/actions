@@ -12,10 +12,11 @@ runs:
       env:
         doxy_arch_ext: linux.bin.tar.gz
         doxy_repo: https://sourceforge.net/projects/doxygen/files
+        download_dir: ${{ github.workspace }}/ob_download
       shell: bash
       run: |
-        curl "$doxy_repo/rel-${{ inputs.version }}/doxygen-${{ inputs.version }}.$doxy_arch_ext" --output "$general_download_dir/doxygen-${{ inputs.version }}.$doxy_arch_ext" --create-dirs --location --silent --show-error
-        cd $general_download_dir
+        curl "$doxy_repo/rel-${{ inputs.version }}/doxygen-${{ inputs.version }}.$doxy_arch_ext" --output "$download_dir/doxygen-${{ inputs.version }}.$doxy_arch_ext" --create-dirs --location --silent --show-error
+        cd $download_dir
         tar xf "doxygen-${{ inputs.version }}.$doxy_arch_ext"
         cd "doxygen-${{ inputs.version }}"
         sudo make install
