@@ -1,0 +1,21 @@
+name: 'Smart Checkout'
+description: 'Checks out the head of the current repository with fetch depth 0, only if it isn't already checked out, and returns the absolute checkout path'
+author: 'oblivioncth'
+outputs:
+  path:
+    description: 'The of the directory the repository is checked out to'
+    value: ${{ github.workspace }}/ob_actions/project_repository
+runs:
+  using: 'composite'
+  steps:
+    - name: Check if repo is checked out
+      id: checkout_check
+      uses: andstor/file-existence-action@v2
+      with:
+        files: '${{ github.workspace }}/ob_actions/project_repository/.git'
+    - name: Checkout repository
+      if: steps.checkout_check.outputs.files_exists == 'true'
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        path: ob_actions/project_repository
