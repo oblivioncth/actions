@@ -1,0 +1,30 @@
+name: 'Get CMake project version'
+description: 'Gets the project version set in the repositories root CMakeLists.txt (assumes literal value)'
+author: 'oblivioncth'
+outputs:
+  version:
+    description: 'The version number'
+    value: ${{ steps.get-version.outputs.version }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout Project
+      id: proj-checkout
+      uses: oblivioncth/actions/git/smart-checkout@dev
+    - name: Get version
+      id: get-version
+      shell: pwsh
+      env:
+        repo_path: ${{ steps.proj-checkout.outputs.path }}
+      run: |
+        cd "${{ env.repo_path }}"
+        echo "Getting project version number from CMakeLists.txt..."
+        $project_file = Get-Content -Raw CMakeLists.txt
+        if(!($project_file -match 'project\(.*\s+VERSION\s+(?<projver>\S+)[\)\s]')){
+          throw "Could not get project version!"
+        }
+        $version = $Matches.projver
+        echo "Version is ${version}"
+        echo "version=$version" >> $GITHUB_OUTPUT
+        
+        
