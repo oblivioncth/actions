@@ -9,18 +9,18 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Checkout doxygen
-      uses: actions/checkout@v3
-      with:
-        repository: 'doxygen/doxygen'
-        ref: ${{ inputs.ref }}
-        path: doxygen_src
-    - name: Build & Install doxygen
-      shell: bash
-      run: |
-        mkdir doxygen_build
-        cd doxygen_build
-        cmake -G "Unix Makefiles" ${{ github.workspace }}/doxygen_src
-        make
-        make install
+  - name: Checkout doxygen
+    uses: actions/checkout@v3
+    with:
+      repository: 'doxygen/doxygen'
+      ref: ${{ inputs.ref }}
+      path: doxygen_src
+  - name: Build & Install doxygen
+    shell: bash
+    run: |
+      mkdir doxygen_build
+      cd doxygen_build
+      cmake -G "Unix Makefiles" ${{ github.workspace }}/doxygen_src
+      make
+      make install
         

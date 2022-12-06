@@ -4,13 +4,11 @@ author: 'oblivioncth'
 runs:
   using: 'composite'
   steps:
-    - name: Set git user info
-      env:
-        ci_bot_username: ObyBotCI
-        ci_bot_email: 104651589+ObyBotCI@users.noreply.github.com
-      shell: bash
-      run: |
-        git config --global user.name "${{ env.ci_bot_username }}"
-        git config --global user.email "${{ env.ci_bot_email }}"
-
-        
+  - name: Set git user info
+    env:
+      ci_bot_username: ObyBotCI
+      ci_bot_email: 104651589+ObyBotCI@users.noreply.github.com
+    shell: bash
+    run: |
+      git config --global user.name "${{ env.ci_bot_username }}"
+      git config --global user.email "${{ env.ci_bot_email }}"
