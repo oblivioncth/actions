@@ -24,7 +24,7 @@ runs:
         throw "Could not get project version!"
       }
       $version = $Matches.projver
-      echo "Version is ${version}"
+      echo "Version is '${version}'"
       echo "version=$version" >> $GITHUB_OUTPUT
       
         
