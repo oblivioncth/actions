@@ -1,0 +1,31 @@
+name: 'Merge branches'
+description: 'Merges the target branch into the source branch'
+author: 'oblivioncth'
+inputs:
+  source_branch:
+    required: true
+    description: The source branch to merge from
+  target_branch:
+    required: true
+    description: The target branch to merge into
+  ff:
+    required: false
+    description: ff strategy: yes, no, only, default
+    default: default
+
+runs:
+  using: 'composite'
+  steps:
+  - name: Merge branches
+    id: proj-checkout
+    uses: oblivioncth/actions/git/smart-checkout@dev
+  - name: Merge
+    shell: pwsh
+    working-directory: ${{ steps.proj-checkout.outputs.path }}
+    run: |
+      $ff=${{ inputs.ff }}
+      $ff_opt=$(($ff -eq "yes") ? "--ff" : ($ff -eq "no") ? "--no-ff" : ($ff -eq "only") ? "--ff-only" : "")
+      git checkout ${{ inputs.target_branch }}
+      git merge ${{ inputs.source_branch }} $ff_opt
+      git push
+        
