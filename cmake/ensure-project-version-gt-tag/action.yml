@@ -4,30 +4,30 @@ author: 'oblivioncth'
 runs:
   using: 'composite'
   steps:
-    - name: Get project version
-      id: get-proj-ver
-      uses: oblivioncth/actions/cmake/get-project-version@dev
-    - name: Checkout Project
-      id: proj-checkout
-      uses: oblivioncth/actions/git/smart-checkout@dev
-    - name: Compare versions
-      shell: pwsh
-      env:
-        repo_path: ${{ steps.proj-checkout.outputs.path }}
-        proj_ver: ${{ steps.get-proj-ver.outputs.version }}
-      run: |
-        cd "${{ env.repo_path }}"
-        echo "Checking for version tags..."
-        if(git tag -l v*.*){
-          echo "Version tags found, comparing new and last tag..."
-          $last_tag_version = $(git describe --abbrev=0 --match v*.*).substring(1)
-          echo "Last tag version: ${last_tag_version}"
-          
-          if(!([version]$proj_ver -gt [version]$last_tag_version)){
-            throw "Project version was not increased to be above previous tagged version!"
-          }
+  - name: Get project version
+    id: get-proj-ver
+    uses: oblivioncth/actions/cmake/get-project-version@dev
+  - name: Checkout Project
+    id: proj-checkout
+    uses: oblivioncth/actions/git/smart-checkout@dev
+  - name: Compare versions
+    shell: pwsh
+    env:
+      repo_path: ${{ steps.proj-checkout.outputs.path }}
+      proj_ver: ${{ steps.get-proj-ver.outputs.version }}
+    run: |
+      cd "${{ env.repo_path }}"
+      echo "Checking for version tags..."
+      if(git tag -l v*.*){
+        echo "Version tags found, comparing new and last tag..."
+        $last_tag_version = $(git describe --abbrev=0 --match v*.*).substring(1)
+        echo "Last tag version: ${last_tag_version}"
+        
+        if(!([version]$proj_ver -gt [version]$last_tag_version)){
+          throw "Project version was not increased to be above previous tagged version!"
         }
-        else{
-          echo "No existing version tags present. Proceeding..."
-        }
+      }
+      else{
+        echo "No existing version tags present. Proceeding..."
+      }
         
