@@ -8,14 +8,14 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Check if repo is checked out
-      id: checkout_check
-      uses: andstor/file-existence-action@v2
-      with:
-        files: '${{ github.workspace }}/ob_actions/project_repository/.git'
-    - name: Checkout repository
-      if: steps.checkout_check.outputs.files_exists == 'false'
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        path: ob_actions/project_repository
+  - name: Check if repo is checked out
+    id: checkout_check
+    uses: andstor/file-existence-action@v2
+    with:
+      files: '${{ github.workspace }}/ob_actions/project_repository/.git'
+  - name: Checkout repository
+    if: steps.checkout_check.outputs.files_exists == 'false'
+    uses: actions/checkout@v3
+    with:
+      fetch-depth: 0
+      path: ob_actions/project_repository
