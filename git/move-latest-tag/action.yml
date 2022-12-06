@@ -1,0 +1,25 @@
+name: 'Move ''latest'' tag'
+description: 'Movest the ''latest'' tag so that it points to the current commit. The tag is created if it doesn't already exist.'
+author: 'oblivioncth'
+runs:
+  using: 'composite'
+  steps:
+  - name: Checkout Project
+    id: proj-checkout
+    uses: oblivioncth/actions/git/smart-checkout@dev
+  - name: Move 'latest' tag
+    shell: pwsh
+    working-directory: ${{ steps.proj-checkout.outputs.path }}
+    run: |
+      echo "Checking for 'latest' tag..."
+      if(git tag -l latest){
+        echo "Removing previous 'latest' tag..."
+        git tag -d latest # Delete tag locally
+        git push origin :refs/tags/latest # Delete tag remotely
+      }
+      else{
+        echo "No tag to remove."
+      }
+      git tag -a latest -m "Latest Release"
+      git push origin latest
+        
