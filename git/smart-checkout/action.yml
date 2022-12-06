@@ -1,5 +1,5 @@
 name: 'Smart Checkout'
-description: 'Checks out the head of the current repository with fetch depth 0, only if it isn't already checked out, and returns the absolute checkout path'
+description: 'Checks out the head of the current repository with fetch depth 0, only if it isn''t already checked out, and returns the absolute checkout path'
 author: 'oblivioncth'
 outputs:
   path:
