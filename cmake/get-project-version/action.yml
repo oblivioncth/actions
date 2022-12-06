@@ -23,8 +23,8 @@ runs:
       if(!($project_file -match 'project\(.*\s+VERSION\s+(?<projver>\S+)[\)\s]')){
         throw "Could not get project version!"
       }
-      $version = $Matches.projver
-      echo "Version is '${version}'"
-      echo "version=$version" >> $GITHUB_OUTPUT
+      $proj_version = $Matches.projver
+      echo "Version is '${proj_version}'"
+      echo "version=$proj_version" >> $Env:GITHUB_OUTPUT
       
         
