@@ -1,0 +1,27 @@
+name: 'Tag'
+description: 'Tags the current commit with the provided tag name'
+author: 'oblivioncth'
+inputs:
+  tag:
+    required: true
+    description: Tag name
+  message:
+    required: false
+    description: Make the tag annotated with this message
+    default: ''
+    
+runs:
+  using: 'composite'
+  steps:
+  - name: Checkout Project
+    id: proj-checkout
+    uses: oblivioncth/actions/git/smart-checkout@dev
+  - name: Tag commit
+    shell: pwsh
+    working-directory: ${{ steps.proj-checkout.outputs.path }}
+    run: |
+        $anno=${{ inputs.message }}
+        $anno_opt=$(($anno -ne "") ? "-m $anno" : "")
+        git tag -a ${{ inputs.tag }} -m "Release $new_tag"
+        git push --tags
+        
