@@ -23,7 +23,7 @@ runs:
         $last_tag_version = $(git describe --abbrev=0 --match v*.*).substring(1)
         echo "Last tag version: ${last_tag_version}"
         
-        if(!([version]$proj_ver -gt [version]$last_tag_version)){
+        if([version]$proj_ver -le [version]$last_tag_version){
           throw "Project version was not increased to be above previous tagged version!"
         }
       }
