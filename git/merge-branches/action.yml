@@ -4,13 +4,13 @@ author: 'oblivioncth'
 inputs:
   source_branch:
     required: true
-    description: The source branch to merge from
+    description: "The source branch to merge from"
   target_branch:
     required: true
-    description: The target branch to merge into
+    description: "The target branch to merge into"
   ff:
     required: false
-    description: ff strategy: yes, no, only, default
+    description: "ff strategy: yes, no, only, default"
     default: default
 
 runs:
