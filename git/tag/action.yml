@@ -20,8 +20,8 @@ runs:
     shell: pwsh
     working-directory: ${{ steps.proj-checkout.outputs.path }}
     run: |
-        $anno=${{ inputs.message }}
+        $anno="${{ inputs.message }}"
         $anno_opt=$(($anno -ne "") ? "-m $anno" : "")
-        git tag -a ${{ inputs.tag }} -m "Release $new_tag"
+        git tag -a "${{ inputs.tag }}" -m "Release $new_tag"
         git push --tags
         

@@ -23,7 +23,7 @@ runs:
     shell: pwsh
     working-directory: ${{ steps.proj-checkout.outputs.path }}
     run: |
-      $ff=${{ inputs.ff }}
+      $ff="${{ inputs.ff }}"
       $ff_opt=$(($ff -eq "yes") ? "--ff" : ($ff -eq "no") ? "--no-ff" : ($ff -eq "only") ? "--ff-only" : "")
       git checkout ${{ inputs.target_branch }}
       git merge ${{ inputs.source_branch }} $ff_opt
