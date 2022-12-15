@@ -1,5 +1,5 @@
-name: 'Move ''latest'' tag'
-description: 'Movest the ''latest'' tag so that it points to the current commit. The tag is created if it doesn't already exist.'
+name: "Move 'latest' tag"
+description: "Moves the 'latest' tag so that it points to the current commit. The tag is created if it doesn't already exist."
 author: 'oblivioncth'
 runs:
   using: 'composite'
