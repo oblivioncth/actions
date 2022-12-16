@@ -1,0 +1,11 @@
+name: 'Ref test'
+description: 'None'
+author: 'oblivioncth'
+runs:
+  using: 'composite'
+  steps:
+  - name: Compare versions
+    shell: pwsh
+    run: |
+      echo "ECHO TEST: Bad"
+        
