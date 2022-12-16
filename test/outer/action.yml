@@ -5,4 +5,4 @@ runs:
   using: 'composite'
   steps:
   - name: Call other action
-    uses: ${{ github.action_repository }}/test/echo@${{ github.action_ref }}
+    uses: oblivioncth/actions/test/echo@807ff892ae4b9c6162571bf4ed4308f235225aba
