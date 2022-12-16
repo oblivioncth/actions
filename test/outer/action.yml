@@ -1,0 +1,8 @@
+name: 'Call another action in same composite repo'
+description: 'None'
+author: 'oblivioncth'
+runs:
+  using: 'composite'
+  steps:
+  - name: Call other action
+    uses: ${{ github.action_repository }}/test/echo@${{ github.action_ref }}
