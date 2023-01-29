@@ -29,7 +29,7 @@ runs:
       qt_arch_ext: 7z
     shell: pwsh
     run: |
-        $filename = qt-Production-${{ inputs.version }}-${{ inputs.os }}-${{ inputs.compiler }}-x64-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}
+        $filename = "qt-Production-${{ inputs.version }}-${{ inputs.os }}-${{ inputs.compiler }}-x64-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}"
         echo "_ffynnon_qt_filename=${filename}" >> $Env:GITHUB_ENV
   
   - name: Cache Qt Build
@@ -47,8 +47,8 @@ runs:
     shell: pwsh
     run: |
       # Path setup
-      $download_path = $(Convert-Path -LiteralPath "TEMP:/") + qt_download.${{ env.qt_arch_ext }}
-      $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String(${{ env.base_url_enc }}))
+      $download_path = $(Convert-Path -LiteralPath "TEMP:/") + "qt_download.${{ env.qt_arch_ext }}"
+      $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       
       # Download
       curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_filename }}" -o '$download_path' --silent --show-error
