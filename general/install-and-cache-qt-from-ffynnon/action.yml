@@ -1,0 +1,57 @@
+name: 'Install and Cache Qt From Ffynnon'
+description: 'Installs the specified Qt build (x64) from Ffynnon and then caches it'
+author: 'oblivioncth'
+inputs:
+  version:
+    required: true
+    description: The version of Qt to install, specified as x.y.z
+  os:
+    required: true
+    description: "'linux' or 'win32'"
+  compiler:
+    required: true
+    description: "C++ compiler that was used to compile qt (e.g. 'clang', 'msvc')"
+  linkage:
+    required: true
+    description: "'shared' or 'static'"
+  path:
+    required: true
+    description: 'Path to install the build to'
+  credentials:
+    required: true
+    description: "Login in 'user:pass' format"
+  
+runs:
+  using: 'composite'
+  steps:
+  - name: Determine filename
+    env:
+      qt_arch_ext: 7z
+    shell: pwsh
+    run: |
+        $filename = qt-Production-${{ inputs.version }}-${{ inputs.os }}-${{ inputs.compiler }}-x64-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}
+        echo "_ffynnon_qt_filename=${filename}" >> $Env:GITHUB_ENV
+  
+  - name: Cache Qt Build
+    id: cache-qt
+    uses: actions/cache@v3
+    with:
+      path: ${{ inputs.path }}
+      key: ${{ env._ffynnon_qt_filename }}
+  
+  - name: Install Qt
+    if: steps.cache-qt.outputs.cache-hit != 'true'
+    env:
+      qt_arch_ext: 7z
+      base_url_enc: aAB0AHQAcABzADoALwAvAGYAaQBsAGUAcwAuAGYAZgB5AG4AbgBvAG4AZwBhAHIAdwAuAGMAbwBtAC8AZABhAHYALgBwAGgAcAAvACUANAAwAEgAbwBtAGUALwBiAGkAbgBhAHIAaQBlAHMALwBxAHQA
+    shell: pwsh
+    run: |
+      # Path setup
+      $download_path = $(Convert-Path -LiteralPath "TEMP:/") + qt_download.${{ env.qt_arch_ext }}
+      $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String(${{ env.base_url_enc }}))
+      
+      # Download
+      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_filename }}" -o '$download_path' --silent --show-error
+      
+      # Extract
+      7z x $download_path -o${{ inputs.path }}
