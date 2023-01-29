@@ -47,7 +47,8 @@ runs:
     shell: pwsh
     run: |
       # Path setup
-      $download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
+      #$download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
+      $download_path = "${{ github.workspace }}/qt_download_noway.7z"
       $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       
       # Download
@@ -56,7 +57,7 @@ runs:
       # Check
       echo "Full URL: $base_url/${{ env._ffynnon_qt_filename }}"
       echo "Download Path: $download_path"
-      ls -l "${{ runner.temp }}"
+      ls -l "${{ github.workspace }}"
       
       # Extract
       7z x $download_path -o${{ inputs.path }}
