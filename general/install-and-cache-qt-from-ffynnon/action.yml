@@ -47,17 +47,11 @@ runs:
     shell: pwsh
     run: |
       # Path setup
-      #$download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
-      $download_path = "${{ github.workspace }}/qt_download_noway.7z"
+      $download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
       $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       
       # Download
-      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_filename }}" -o '$download_path'
-      
-      # Check
-      echo "Full URL: $base_url/${{ env._ffynnon_qt_filename }}"
-      echo "Download Path: $download_path"
-      ls -l "${{ github.workspace }}"
+      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_filename }}" -o "$download_path" --silent --show-error
       
       # Extract
-      7z x $download_path -o${{ inputs.path }}
+      7z x "$download_path" -o"${{ inputs.path }}"
