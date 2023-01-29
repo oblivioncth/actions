@@ -47,7 +47,7 @@ runs:
     shell: pwsh
     run: |
       # Path setup
-      $download_path = $(Convert-Path -LiteralPath "TEMP:/") + "qt_download.${{ env.qt_arch_ext }}"
+      $download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
       $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       
       # Download
