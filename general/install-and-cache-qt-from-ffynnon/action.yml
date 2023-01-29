@@ -51,7 +51,12 @@ runs:
       $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       
       # Download
-      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_filename }}" -o '$download_path' --silent --show-error
+      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_filename }}" -o '$download_path'
+      
+      # Check
+      echo "Full URL: $base_url/${{ env._ffynnon_qt_filename }}"
+      echo "Download Path: $download_path"
+      ls -l "${{ runner.temp }}"
       
       # Extract
       7z x $download_path -o${{ inputs.path }}
