@@ -7,10 +7,10 @@ inputs:
     description: The version of Qt to install, specified as x.y.z
   os:
     required: true
-    description: "'linux' or 'win32'"
+    description: "'linux' or 'windows'"
   compiler:
     required: true
-    description: "C++ compiler that was used to compile qt (e.g. 'clang', 'msvc')"
+    description: "C++ compiler (and version) that was used to compile qt (e.g. 'clang12', 'msvc2019', 'gcc5', etc)"
   linkage:
     required: true
     description: "'shared' or 'static'"
@@ -29,15 +29,19 @@ runs:
       qt_arch_ext: 7z
     shell: pwsh
     run: |
-        $filename = "qt-Production-${{ inputs.version }}-${{ inputs.os }}-${{ inputs.compiler }}-x64-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}"
-        echo "_ffynnon_qt_filename=${filename}" >> $Env:GITHUB_ENV
-  
+      $path = "/${{ inputs.os }}/${{ inputs.compiler }}"
+      $filename = "${{ inputs.version }}-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}"
+      $fullpath = "${path}/${filename}"
+      $config_id = "${{ inputs.version }}_${{ inputs.os }}_${{ inputs.compiler }}_${{ inputs.linkage }}"
+      echo "_ffynnon_qt_fullpath=${fullpath}" >> $Env:GITHUB_ENV
+      echo "_ffynnon_qt_config_id=${config_id}" >> $Env:GITHUB_ENV
+
   - name: Cache Qt Build
     id: cache-qt
     uses: actions/cache@v3
     with:
       path: ${{ inputs.path }}
-      key: ${{ env._ffynnon_qt_filename }}
+      key: ${{ env._ffynnon_qt_config_id }}
   
   - name: Install Qt
     if: steps.cache-qt.outputs.cache-hit != 'true'
@@ -51,7 +55,7 @@ runs:
       $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       
       # Download
-      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_filename }}" -o "$download_path" --silent --show-error
+      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_fullpath }}" -o "$download_path" --silent --show-error
       
       # Extract
       7z x "$download_path" -o"${{ inputs.path }}"
