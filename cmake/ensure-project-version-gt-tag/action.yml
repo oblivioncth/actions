@@ -20,7 +20,7 @@ runs:
       echo "Checking for version tags..."
       if(git tag -l v*.*){
         echo "Version tags found, comparing new and last tag..."
-        $last_tag_version = $(git describe --abbrev=0 --match v*.*).substring(1)
+        $last_tag_version = $(git describe --abbrev=0 --match v*.* --tags).substring(1)
         echo "Last tag version: ${last_tag_version}"
         
         if([version]$Env:proj_ver -le [version]$last_tag_version){
