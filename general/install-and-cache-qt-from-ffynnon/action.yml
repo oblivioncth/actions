@@ -29,7 +29,7 @@ runs:
       qt_arch_ext: 7z
     shell: pwsh
     run: |
-      $path = "/${{ inputs.os }}/${{ inputs.compiler }}"
+      $path = "${{ inputs.os }}/${{ inputs.compiler }}"
       $filename = "${{ inputs.version }}-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}"
       $fullpath = "${path}/${filename}"
       $config_id = "${{ inputs.version }}_${{ inputs.os }}_${{ inputs.compiler }}_${{ inputs.linkage }}"
