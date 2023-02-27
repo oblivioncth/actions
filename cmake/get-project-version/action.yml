@@ -20,7 +20,10 @@ runs:
       cd "${{ env.repo_path }}"
       echo "Getting project version number from CMakeLists.txt..."
       $project_file = Get-Content -Raw CMakeLists.txt
-      if(!($project_file -match 'project\(.*\s+VERSION\s+(?<projver>\S+)[\)\s]')){
+      
+      # The (?s) is a pwsh specific "miscellaneous construct" that enables single-line mode for
+      # the '.' character (i.e. /s for PCRE), and not part of the actually expression
+      if(!($project_file -match '(?s)project\(.*?\s+VERSION\s+(?<projver>\S+)[\)\s]')){
         throw "Could not get project version!"
       }
       $proj_version = $Matches.projver
