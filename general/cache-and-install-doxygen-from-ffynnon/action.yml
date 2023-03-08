@@ -1,5 +1,5 @@
-name: 'Install and Cache Qt From Ffynnon'
-description: 'Installs the specified Qt build (x64) from Ffynnon and then caches it'
+name: 'Cache and Install Doxygen From Ffynnon'
+description: 'Downloads the specified Doxygen version from Ffynnon, caches it, the installs it'
 author: 'oblivioncth'
 inputs:
   version:
