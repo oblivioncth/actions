@@ -35,7 +35,7 @@ runs:
   - name: Download Doxygen
     if: steps.cache-doxygen.outputs.cache-hit != 'true'
     env:
-      base_url_enc: aHR0cHM6Ly9maWxlcy5mZnlubm9uZ2Fydy5jb20vZGF2LnBocC8lNDBIb21lL3Rvb2xzL2RveHlnZW4=
+      base_url_enc: aAB0AHQAcABzADoALwAvAGYAaQBsAGUAcwAuAGYAZgB5AG4AbgBvAG4AZwBhAHIAdwAuAGMAbwBtAC8AZABhAHYALgBwAGgAcAAvACUANAAwAEgAbwBtAGUALwB0AG8AbwBsAHMALwBkAG8AeAB5AGcAZQBuAA==
     shell: pwsh
     run: |
       # Path setup
