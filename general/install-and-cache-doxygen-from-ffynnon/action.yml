@@ -8,7 +8,9 @@ inputs:
   os:
     required: true
     description: "'linux' or 'windows'"
-  
+  credentials:
+    required: true
+    description: "Login in 'user:pass' format"
 runs:
   using: 'composite'
   steps:
