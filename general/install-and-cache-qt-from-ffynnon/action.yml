@@ -47,7 +47,7 @@ runs:
     if: steps.cache-qt.outputs.cache-hit != 'true'
     env:
       qt_arch_ext: 7z
-      base_url_enc: aAB0AHQAcABzADoALwAvAGYAaQBsAGUAcwAuAGYAZgB5AG4AbgBvAG4AZwBhAHIAdwAuAGMAbwBtAC8AZABhAHYALgBwAGgAcAAvACUANAAwAEgAbwBtAGUALwBiAGkAbgBhAHIAaQBlAHMALwBxAHQA
+      base_url_enc: aHR0cHM6Ly9maWxlcy5mZnlubm9uZ2Fydy5jb20vZGF2LnBocC8lNDBIb21lL2xpYnJhcmllcy9iaW5hcmllcy9xdA==
     shell: pwsh
     run: |
       # Path setup
