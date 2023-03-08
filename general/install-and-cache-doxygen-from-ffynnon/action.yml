@@ -1,0 +1,51 @@
+name: 'Install and Cache Qt From Ffynnon'
+description: 'Installs the specified Qt build (x64) from Ffynnon and then caches it'
+author: 'oblivioncth'
+inputs:
+  version:
+    required: true
+    description: The version of Doxygen to install, specified as x.y.z
+  os:
+    required: true
+    description: "'linux' or 'windows'"
+  
+runs:
+  using: 'composite'
+  steps:
+  - name: Determine filename and temp path
+    env:
+      doxygen_setup_ext: exe
+    shell: pwsh
+    run: |
+      $path = "${{ inputs.os }}"
+      $filename = "${{ inputs.version }}.${{ env.doxygen_setup_ext }}"
+      $fullpath = "${path}/${filename}"
+      $config_id = "FFYNNON_DOXYGEN_${{ inputs.version }}_${{ inputs.os }}"
+      echo "_ffynnon_doxygen_fullpath=${fullpath}" >> $Env:GITHUB_ENV
+      echo "_ffynnon_doxygen_config_id=${config_id}" >> $Env:GITHUB_ENV
+      echo "_ffynnon_doxygen_temp_path=${{ runner.temp }}/setup.${{ env.doxygen_setup_ext }}" >> $Env:GITHUB_ENV
+
+  - name: Cache Doxygen Installer
+    id: cache-doxygen
+    uses: actions/cache@v3
+    with:
+      path: ${{ env._ffynnon_doxygen_temp_path }}
+      key: ${{ env._ffynnon_doxygen_config_id }}
+  
+  - name: Download Doxygen
+    if: steps.cache-doxygen.outputs.cache-hit != 'true'
+    env:
+      base_url_enc: aHR0cHM6Ly9maWxlcy5mZnlubm9uZ2Fydy5jb20vZGF2LnBocC8lNDBIb21lL3Rvb2xzL2RveHlnZW4=
+    shell: pwsh
+    run: |
+      # Path setup
+      $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
+      $download_path = ${{ env._ffynnon_doxygen_temp_path }}
+      
+      # Download
+      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_doxygen_fullpath }}" -o "$download_path" --silent --show-error
+      
+  - name: Install Doxygen
+    shell: pwsh
+    run: |
+      Start-Process -FilePath "${_ffynnon_doxygen_temp_path}" -ArgumentList "/VERYSILENT" -Wait
