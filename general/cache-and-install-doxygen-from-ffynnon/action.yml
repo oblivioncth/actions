@@ -50,4 +50,4 @@ runs:
   - name: Install Doxygen
     shell: pwsh
     run: |
-      Start-Process -FilePath "${_ffynnon_doxygen_temp_path}" -ArgumentList "/VERYSILENT" -Wait
+      Start-Process -FilePath "${{ env._ffynnon_doxygen_temp_path }}" -ArgumentList "/VERYSILENT" -Wait
