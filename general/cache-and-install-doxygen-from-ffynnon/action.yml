@@ -25,7 +25,7 @@ runs:
       $config_id = "FFYNNON_DOXYGEN_${{ inputs.version }}_${{ inputs.os }}"
       echo "_ffynnon_doxygen_fullpath=${fullpath}" >> $Env:GITHUB_ENV
       echo "_ffynnon_doxygen_config_id=${config_id}" >> $Env:GITHUB_ENV
-      echo "_ffynnon_doxygen_temp_path=${{ runner.temp }}/setup.${{ env.doxygen_setup_ext }}" >> $Env:GITHUB_ENV
+      echo "_ffynnon_doxygen_temp_path=${{ runner.temp }}/doxygen_setup.${{ env.doxygen_setup_ext }}" >> $Env:GITHUB_ENV
 
   - name: Cache Doxygen Installer
     id: cache-doxygen
@@ -42,7 +42,7 @@ runs:
     run: |
       # Path setup
       $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
-      $download_path = ${{ env._ffynnon_doxygen_temp_path }}
+      $download_path = "${{ env._ffynnon_doxygen_temp_path }}"
       
       # Download
       curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_doxygen_fullpath }}" -o "$download_path" --silent --show-error
