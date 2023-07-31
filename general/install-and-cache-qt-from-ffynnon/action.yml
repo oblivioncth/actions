@@ -47,7 +47,7 @@ runs:
     if: steps.cache-qt.outputs.cache-hit != 'true'
     env:
       qt_arch_ext: 7z
-      base_url_enc: aAB0AHQAcABzADoALwAvAGYAaQBsAGUAcwAuAGYAZgB5AG4AbgBvAG4AZwBhAHIAdwAuAGMAbwBtAC8AZABhAHYALgBwAGgAcAAvACUANAAwAEgAbwBtAGUALwBsAGkAYgByAGEAcgBpAGUAcwAvAGIAaQBuAGEAcgBpAGUAcwAvAHEAdAA=
+      base_url_enc: aAB0AHQAcABzADoALwAvAGMAbABvAHUAZAAuAGYAZgB5AG4AbgBvAG4AZwBhAHIAdwAuAGMAbwBtAC8AcgBlAG0AbwB0AGUALgBwAGgAcAAvAGQAYQB2AC8AZgBpAGwAZQBzAC8AbwBiAHkAYgBvAHQALwBsAGkAYgByAGEAcgBpAGUAcwAvAGIAaQBuAGEAcgBpAGUAcwAvAHEAdAA==
     shell: pwsh
     run: |
       # Path setup
@@ -55,7 +55,7 @@ runs:
       $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       
       # Download
-      curl --user '${{ inputs.credentials }}' --anyauth "$base_url/${{ env._ffynnon_qt_fullpath }}" -o "$download_path" --silent --show-error
+      curl --user "${{ inputs.credentials }}" --anyauth "$base_url/${{ env._ffynnon_qt_fullpath }}" -o "$download_path" --silent --show-error
       
       # Extract
       7z x "$download_path" -o"${{ inputs.path }}"
