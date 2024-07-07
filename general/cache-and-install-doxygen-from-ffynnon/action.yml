@@ -29,7 +29,7 @@ runs:
 
   - name: Cache Doxygen Installer
     id: cache-doxygen
-    uses: actions/cache@v3
+    uses: actions/cache@v4
     with:
       path: ${{ env._ffynnon_doxygen_temp_path }}
       key: ${{ env._ffynnon_doxygen_config_id }}
