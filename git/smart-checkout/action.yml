@@ -10,7 +10,7 @@ runs:
   steps:
   - name: Check if repo is checked out
     id: checkout_check
-    uses: andstor/file-existence-action@v2
+    uses: andstor/file-existence-action@v3
     with:
       files: '${{ github.workspace }}/ob_actions/project_repository/.git'
   - name: Checkout repository
