@@ -1,0 +1,11 @@
+release:
+ - base_branch: ['main', 'master']
+
+enhancement:
+ - head-branch: ['^feature/']
+ 
+bug:
+ - head-branch: ['^bugfix/']
+ 
+backend:
+ - head-branch: ['^backend/']
