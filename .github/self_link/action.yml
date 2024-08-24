@@ -1,0 +1,25 @@
+name: 'INTERNAL: Self Link'
+description: 'Creates a symlink for this repository so that actions here can easily use local resources from the same ref'
+author: 'oblivioncth'
+runs:
+  using: 'composite'
+  steps:
+  - name: Set path variables
+    id: variables
+    shell: bash
+    run: |
+        echo "link_target=${{ github.action_path }}/../.." >> "${GITHUB_OUTPUT}"
+        echo "link_path=./.this_repo" >> "${GITHUB_OUTPUT}"
+  - name: Check if link already exists
+    id: link_check
+    shell: bash
+    run: |
+        if [ -L "${{ steps.variables.outputs.link_path }}" ]; then
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
+        else
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
+        fi
+  - name: Link repository root
+    if: steps.link_check.outputs.exists == 'false'
+    shell: bash
+    run: ln -fs "${{ steps.variables.outputs.link_target }}" "${{ steps.variables.outputs.link_path }}"
