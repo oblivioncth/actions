@@ -16,9 +16,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
+  - uses: oblivioncth/actions/.github/self_link
   - name: Merge branches
     id: proj-checkout
-    uses: oblivioncth/actions/git/smart-checkout@dev
+    uses: ./.this_repo/git/smart-checkout
   - name: Merge
     shell: pwsh
     working-directory: ${{ steps.proj-checkout.outputs.path }}

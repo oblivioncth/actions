@@ -13,9 +13,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
+  - uses: oblivioncth/actions/.github/self_link
   - name: Checkout Project
     id: proj-checkout
-    uses: oblivioncth/actions/git/smart-checkout@dev
+    uses: ./.this_repo/git/smart-checkout
   - name: Tag commit
     shell: pwsh
     working-directory: ${{ steps.proj-checkout.outputs.path }}

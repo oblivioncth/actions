@@ -4,12 +4,13 @@ author: 'oblivioncth'
 runs:
   using: 'composite'
   steps:
+  - uses: oblivioncth/actions/.github/self_link
   - name: Get project version
     id: get-proj-ver
-    uses: oblivioncth/actions/cmake/get-project-version@dev
+    uses: ./.this_repo/cmake/get-project-version
   - name: Checkout Project
     id: proj-checkout
-    uses: oblivioncth/actions/git/smart-checkout@dev
+    uses: ./.this_repo/git/smart-checkout
   - name: Compare versions
     shell: pwsh
     env:
