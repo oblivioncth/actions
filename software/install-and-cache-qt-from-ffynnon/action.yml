@@ -7,10 +7,7 @@ inputs:
     description: The version of Qt to install, specified as x.y.z
   os:
     required: true
-    description: "'linux' or 'windows'"
-  compiler:
-    required: true
-    description: "C++ compiler (and version) that was used to compile qt (e.g. 'clang12', 'msvc2019', 'gcc5', etc)"
+    description: "Matches the 'runs-on' parameter of the job"
   linkage:
     required: true
     description: "'shared' or 'static'"
@@ -29,7 +26,7 @@ runs:
       qt_arch_ext: 7z
     shell: pwsh
     run: |
-      $path = "${{ inputs.os }}/${{ inputs.compiler }}"
+      $path = "${{ inputs.os }}"
       $filename = "${{ inputs.version }}-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}"
       $fullpath = "${path}/${filename}"
       $config_id = "FFYNNON_QT_${{ inputs.version }}_${{ inputs.os }}_${{ inputs.compiler }}_${{ inputs.linkage }}"
