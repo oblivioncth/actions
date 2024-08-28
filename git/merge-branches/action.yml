@@ -3,8 +3,9 @@ description: 'Merges the target branch into the source branch'
 author: 'oblivioncth'
 inputs:
   source_branch:
-    required: true
+    required: false
     description: "The source branch to merge from"
+    default: '' # Current branch
   target_branch:
     required: true
     description: "The target branch to merge into"
@@ -23,10 +24,17 @@ runs:
   - name: Merge
     shell: pwsh
     working-directory: ${{ steps.proj-checkout.outputs.path }}
+    env:
+        ff: ${{ inputs.ff }}
+        source: ${{ inputs.source_branch }} 
+        target: ${{ inputs.target_branch }}
     run: |
-      $ff="${{ inputs.ff }}"
+      $ff="$Env:ff"
       $ff_opt=$(($ff -eq "yes") ? "--ff" : ($ff -eq "no") ? "--no-ff" : ($ff -eq "only") ? "--ff-only" : "")
-      git checkout ${{ inputs.target_branch }}
-      git merge ${{ inputs.source_branch }} $ff_opt
+      $source=($Env:source -ne "") ? "$Env:source" : "${{ github.ref_name }}"
+      $current_branch=$(git branch --show-current) # Restore when done
+      git checkout $Env:target
+      git merge $source $ff_opt
       git push
+      git checkout $current_branch
         
