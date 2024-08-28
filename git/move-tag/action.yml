@@ -1,0 +1,29 @@
+name: "Move tag"
+description: "Moves the provided tag so that it points to the current commit. The tag is created if it doesn't already exist."
+author: 'oblivioncth'
+inputs:
+  tag:
+    required: true
+    description: Tag name
+  message:
+    required: false
+    description: Make the tag annotated with this message
+    default: ''
+    
+runs:
+  using: 'composite'
+  steps:
+  - uses: oblivioncth/actions/.github/self_link
+  - name: Checkout Project
+    id: proj-checkout
+    uses: ./.this_repo/git/smart-checkout
+  - name: Move
+    shell: pwsh
+    working-directory: ${{ steps.proj-checkout.outputs.path }}
+    env:
+      t_name: ${{ inputs.tag }}
+      t_msg: ${{ inputs.message }}
+    run: |
+        $anno_opt=$(($Env:t_msg -ne "") ? "-a -m `"$Env:t_msg`"" : "")
+        git tag -f $Env:t_name $anno_opt
+        git push -f origin $Env:t_name

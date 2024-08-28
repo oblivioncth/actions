@@ -1,4 +1,4 @@
-name: 'Tag'
+name: 'Add Tag'
 description: 'Tags the current commit with the provided tag name'
 author: 'oblivioncth'
 inputs:
@@ -17,12 +17,15 @@ runs:
   - name: Checkout Project
     id: proj-checkout
     uses: ./.this_repo/git/smart-checkout
-  - name: Tag commit
+  - name: Add
     shell: pwsh
     working-directory: ${{ steps.proj-checkout.outputs.path }}
+    env:
+      t_name: ${{ inputs.tag }}
+      t_msg: ${{ inputs.message }}
     run: |
-        $anno="${{ inputs.message }}"
-        $anno_opt=$(($anno -ne "") ? "-m $anno" : "")
-        git tag -a "${{ inputs.tag }}" -m "Release $new_tag"
-        git push --tags
+        $anno_opt=$(($Env:t_msg -ne "") ? "-a -m `"$Env:t_msg`"" : "")
+        git tag $Env:t_name $anno_opt
+        git push origin $Env:t_name
+        
         

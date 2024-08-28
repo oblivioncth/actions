@@ -1,0 +1,30 @@
+name: "Remove Tag"
+description: "Removes the specified tag"
+author: 'oblivioncth'
+inputs:
+  tag:
+    required: true
+    description: Tag name
+    
+runs:
+  using: 'composite'
+  steps:
+  - uses: oblivioncth/actions/.github/self_link
+  - name: Checkout Project
+    id: proj-checkout
+    uses: ./.this_repo/git/smart-checkout
+  - name: Remove
+    shell: pwsh
+    working-directory: ${{ steps.proj-checkout.outputs.path }}
+    env:
+        t_name: ${{ inputs.tag }}
+    run: |
+      echo "Checking for '$Env:t_name' tag..."
+      if(git tag -l $Env:t_name){
+        echo "Removing previous '$Env:t_name' tag..."
+        git tag -d $Env:t_name # Delete tag locally
+        git push origin :refs/tags/$Env:t_name # Delete tag remotely
+      }
+      else{
+        echo "No tag to remove."
+      }
