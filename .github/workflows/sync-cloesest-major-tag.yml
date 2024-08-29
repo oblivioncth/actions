@@ -1,0 +1,27 @@
+name: Sync Major Tag
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+*"
+
+jobs:
+  sync-major-tag:
+    name: Sync Major Tag
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get major version tag
+      id: get-major-tag
+      shell: pwsh
+      run: |
+        $tag = $env:GITHUB_REF -replace 'refs/tags/', ''
+        $pattern = '^v(\d+)(\.\d+)+(\.\d+)?$'
+        if ($tag -match $pattern) {
+            $major = "v$($matches[1])"
+            echo "major=$major" >> $Env:GITHUB_OUTPUT
+        } else {
+            throw "Invalid tag format: $tag"
+        }
+    - name: Create/move corresponding major tag
+      uses: oblivioncth/actions/git/move-tag@feature/upgrades
+      with:
+        tag: '${{ steps.get-major-tag.outputs.major }}'
