@@ -148,19 +148,19 @@ jobs:
         path: ${{ env.qt_install_dir }}
         credentials: ${{ secrets.ffynnon_cred }}
     - name: Install Doxygen (Sourceforge)
-      if: steps.project-meta.outputs.has_doc == 'true' && env.is_linux == 'true'
+      if: steps.project-meta.outputs.has_docs == 'true' && env.is_linux == 'true'
       uses: oblivioncth/actions/ubuntu/install-doxygen-from-sourceforge@feature/upgrades
       with:
         version: 1.10.0
     - name: Install Doxygen (Ffynnon)
-      if: steps.project-meta.outputs.has_doc == 'true' && env.is_win == 'true'
+      if: steps.project-meta.outputs.has_docs == 'true' && env.is_win == 'true'
       uses: oblivioncth/actions/software/install-and-cache-doxygen-from-ffynnon@feature/upgrades
       with:
         version: 1.10.0
         os: windows
         credentials: ${{ secrets.ffynnon_cred }}
     - name: Install Graphviz
-      if: steps.project-meta.outputs.has_doc == 'true'
+      if: steps.project-meta.outputs.has_docs == 'true'
       run: |
         if($Env:is_win -eq 'true') {
           choco install graphviz
@@ -213,7 +213,7 @@ jobs:
         linkage: ${{ matrix.linkage}}
         cmake_gen: Ninja Multi-Config
         vs_dir: C:/Program Files/Microsoft Visual Studio/2022/Enterprise
-        has_doc: ${{ steps.project-meta.outputs.has_doc }}
+        has_docs: ${{ steps.project-meta.outputs.has_docs }}
         has_tests: ${{ steps.project-meta.outputs.has_tests }}
       run: |
         # Vars
@@ -245,7 +245,7 @@ jobs:
         }
         
         # Configure - Doc
-        if($Env:has_doc -eq 'true') {
+        if($Env:has_docs -eq 'true') {
             $cmake_args.Add("-D${pp}_DOCS=ON")
         }
         
