@@ -218,8 +218,8 @@ jobs:
       run: |
         # Vars
         $pp = "$Env:project_prefix"
-        $cmake = if($Env:use_qt -eq 'true') { $Env:qt_cmake } else { "cmake" }
-        $bsl = if($Env:linkage -eq "shared") { "ON" } else { "OFF" }
+        $cmake = ($Env:use_qt -eq 'true') ? "$Env:qt_cmake" : "cmake"
+        $bsl = ($Env:linkage -eq "shared") ? "ON" : "OFF"
         $c_comp = "$Env:c_comp"
         $cxx_comp = "$c_comp"
       

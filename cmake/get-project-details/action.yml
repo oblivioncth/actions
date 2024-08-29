@@ -42,15 +42,15 @@ runs:
       echo "version=$version" >> $Env:GITHUB_OUTPUT
       
       # Qt check
-      $usesQt = if(Select-String -Path "$Env:src/CMakeLists.txt" -Pattern ("find_package(Qt","ob_find_qt6_package(") -SimpleMatch -Quiet) { "true" } else { "false" }
+      $usesQt = (Select-String -Path "$Env:src/CMakeLists.txt" -Pattern ("find_package(Qt","ob_find_qt6_package(") -SimpleMatch -Quiet) ? 'true' : 'false'
       echo "uses_qt=$usesQt" >> $Env:GITHUB_OUTPUT
         
       # Doc check
-      $hasDocs = if(Get-ChildItem -Path "$Env:src" -Directory -Filter "*doc*") { "true" } else { "false" }
+      $hasDocs = (Get-ChildItem -Path "$Env:src" -Directory -Filter "*doc*") ? 'true' : 'false'
       echo "has_docs=$hasDocs" >> $Env:GITHUB_OUTPUT
         
       # Test check
-      $hasTests = if(Get-ChildItem -Path "$Env:src" -Directory -Filter "*test*") { "true" } else { "false" }
+      $hasTests = (Get-ChildItem -Path "$Env:src" -Directory -Filter "*test*") ? 'true' : 'false'
       echo "has_tests=$hasTests" >> $Env:GITHUB_OUTPUT
         
       # Misc
