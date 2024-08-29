@@ -222,6 +222,7 @@ jobs:
         $bsl = ($Env:linkage -eq "shared") ? "ON" : "OFF"
         $c_comp = "$Env:c_comp"
         $cxx_comp = "$c_comp"
+        echo "Using cmake executable '$cmake'"
       
         # Configure - Base
         $cmake_args = [System.Collections.Generic.List[object]]@('-G', "$Env:cmake_gen", '-S', "$Env:project_src_dir", '-B', "$Env:project_build_dir", "-DBUILD_SHARED_LIBS=$bsl")

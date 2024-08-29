@@ -55,15 +55,16 @@ runs:
         
       # Misc
       $repoName = "${{ github.event.repository.name }}"
-      echo "repo_name_uc=$($repoName.ToUpper())" >> $Env:GITHUB_OUTPUT
+      $repoNameUC = $repoName.ToUpper()
+      echo "repo_name_uc=$repoNameUC" >> $Env:GITHUB_OUTPUT
       
       # Log
       $details = @"
       Version: $version
-      Uses Qt: $uses_qt
-      Has Docs: $has_docs
-      Has Tests : $has_tests
-      Uppercase Repo Name: $repo_name_uc
+      Uses Qt: $usesQt
+      Has Docs: $hasDocs
+      Has Tests : $hasTests
+      Uppercase Repo Name: $repoNameUC
       "@
       Write-Host $details
     
