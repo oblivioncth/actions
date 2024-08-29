@@ -20,7 +20,7 @@ outputs:
 runs:
   using: 'composite'
   steps:
-  - uses: oblivioncth/actions/.github/self_link
+  - uses: oblivioncth/actions/.github/self_link@dev
   - name: Checkout Project
     id: checkout
     uses: ./.this_repo/git/smart-checkout

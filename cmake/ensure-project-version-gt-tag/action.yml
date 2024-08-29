@@ -4,7 +4,7 @@ author: 'oblivioncth'
 runs:
   using: 'composite'
   steps:
-  - uses: oblivioncth/actions/.github/self_link
+  - uses: oblivioncth/actions/.github/self_link@dev
   - name: Get project version
     id: get-proj-ver
     uses: ./.this_repo/cmake/get-project-version
