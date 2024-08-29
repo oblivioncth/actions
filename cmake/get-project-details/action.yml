@@ -15,7 +15,7 @@ outputs:
     description: '"true" if project has tests; otherwise false'
     value: ${{ steps.details.outputs.has_tests }}
   repo_name_uc:
-    description: 'Project's repository name in uppercase'
+    description: 'Projects repository name in uppercase'
     value: ${{ steps.details.outputs.repo_name_uc }}
 runs:
   using: 'composite'

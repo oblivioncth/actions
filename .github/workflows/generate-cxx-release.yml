@@ -1,0 +1,94 @@
+on:
+  workflow_call:
+    inputs:
+      artifacts_run_id:
+        required: true
+        type: number
+      doc_artifact_pattern:
+        required: false
+        type: string
+        default: "*_Linux_Static_x64*"
+        
+jobs:
+  update-docs:
+    name: Update gh-pages (if applicable)
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.page-deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    env:
+      doc_artifacts_path: ${{ github.workspace }}/DocArtifacts
+    steps:
+    - name: Check for docs
+      id: doc-check
+      uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
+    - name: Download built doc artifacts
+      if: steps.doc-check.outputs.has_docs == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        pattern: "${{ inputs.doc_artifact_pattern }}"
+        path: ${{ env.doc_artifacts_path }}
+        run-id: ${{ inputs.artifacts_run_id }}
+        github-token: ${{ github.token }}
+    - name: Select specific doc folder
+      id: doc-folder
+      if: steps.doc-check.outputs.has_docs == 'true'
+      shell: pwsh
+      run: |
+        $doc_folder = Get-ChildItem "$Env:doc_artifacts_path" -Directory | Select-Object -First 1
+        if(-not $doc_folder) {
+            throw "No doc artifact available!"
+        }
+        echo "doc_folder=$doc_folder" >> $Env:GITHUB_OUTPUT
+    - name: Setup pages
+      if: steps.doc-check.outputs.has_docs == 'true'
+      uses: actions/configure-pages@v4
+    - name: Upload pages artifact
+      if: steps.doc-check.outputs.has_docs == 'true'
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: ${{ steps.doc-folder.outputs.doc_folder }}/doc/html
+    - name: Deploy pages artifact
+      id: page-deployment
+      if: steps.doc-check.outputs.has_docs == 'true'
+      uses: actions/deploy-pages@v4
+      
+  create-release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    env:
+      artifacts_path: ${{ github.workspace }}/Artifacts
+      zips_path: ${{ github.workspace }}/Zips
+    steps:
+    - name: Get project details
+      id: details
+      uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
+    - name: Download built project artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ${{ env.artifacts_path }}
+        run-id: ${{ inputs.artifacts_run_id }}
+        github-token: ${{ github.token }}
+    - name: Zip up release artifacts
+      shell: pwsh
+      run: |
+        $artifact_folders = Get-ChildItem -Directory -Path "${{ env.artifacts_path }}" -Exclude "github-pages"
+        foreach($art_dir in $artifact_folders)
+        {
+          $name = $art_dir.name
+          $path = $art_dir.fullname
+          7z a "${{ env.zips_path }}/${name}.zip" "${path}/*"
+        }
+    - name: Generate release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: "${{ github.event.repository.name }} Release v${{ steps.details.outputs.version }}"
+        tag_name: "v${{ steps.details.outputs.version }}"
+        fail_on_unmatched_files: true
+        generate_release_notes: true
+        files: |
+          ${{ env.zips_path }}/*.zip

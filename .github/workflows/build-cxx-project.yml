@@ -13,10 +13,6 @@ on:
     secrets:
       ffynnon_cred:
         required: true
-    outputs:
-      doc_artifact_name:
-        description: "Name of artifact used to update docs"
-        value: ${{ jobs.do-runs.outputs.doc_artifact_name }}
 
 jobs:
   prepare-runs:
@@ -102,8 +98,6 @@ jobs:
     defaults:
       run:
         shell: pwsh
-    outputs:
-      doc_artifact_name: ${{ steps.set_doc_artifact_name.outputs.doc_artifact_name }}
     env:
       qt_install_dir: ${{ github.workspace }}/Qt/Install
       project_src_suffix: Project/Source
@@ -126,24 +120,7 @@ jobs:
         fetch-depth: 0 # Required for verbose versioning to work correctly
     - name: Detect Project Details
       id: project-meta
-      env:
-        src: ${{ env.project_src_dir}}
-      run: |
-        # Qt check
-        $usesQt = if(Select-String -Path "$Env:src/CMakeLists.txt" -Pattern ("find_package(Qt","ob_find_qt6_package(") -SimpleMatch -Quiet) { "true" } else { "false" }
-        echo "uses_qt=$usesQt" >> $Env:GITHUB_OUTPUT
-        
-        # Doc check
-        $hasDoc = if(Get-ChildItem -Path "$Env:src" -Directory -Filter "*doc*") { "true" } else { "false" }
-        echo "has_doc=$hasDoc" >> $Env:GITHUB_OUTPUT
-        
-        # Test check
-        $hasTests = if(Get-ChildItem -Path "$Env:src" -Directory -Filter "*test*") { "true" } else { "false" }
-        echo "has_tests=$hasTests" >> $Env:GITHUB_OUTPUT
-        
-        # Misc
-        $repoName = "${{ github.event.repository.name }}"
-        echo "repo_name_uc=$($repoName.ToUpper())" >> $Env:GITHUB_OUTPUT
+      uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
     - name: Update Package Index [Linux]
       if: env.is_linux == 'true'
       run: sudo apt-get update
@@ -228,7 +205,7 @@ jobs:
       if: env.is_win == 'true'
       uses: ilammy/msvc-dev-cmd@v1
     - name: Build Project
-      working-directory: ${{ env.qx_src_dir }}
+      working-directory: ${{ env.project_src_dir }}
       env:
         project_prefix: ${{ steps.project-meta.outputs.repo_name_uc }}
         use_qt: ${{ steps.project-meta.outputs.uses_qt }}
@@ -304,10 +281,6 @@ jobs:
             $artifact_name += " [$Env:cxx_comp]"
         }
         echo "current_artifact_name=$artifact_name" >> $Env:GITHUB_ENV
-    - name: Set doc artifact name
-      id: set_doc_artifact_name
-      if: env.has_doc == 'true' && env.is_linux == 'true' && matrix.linkage.type == 'static' # Uses the last static Linux run
-      run: echo "doc_artifact_name=$Env:current_artifact_name" >> $Env:GITHUB_OUTPUT
     - name: Upload Project build artifact
       uses: actions/upload-artifact@v4
       with:

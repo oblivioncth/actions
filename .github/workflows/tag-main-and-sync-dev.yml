@@ -1,0 +1,32 @@
+on:
+  workflow_call:
+        
+jobs:
+  tag_default_and_sync_to_dev: # Technically tags the current branch, but this should only be used on default branch merges
+    name: Tag default branch merge commit, FF back to dev
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get project version
+      id: get-proj-ver
+      uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
+    - name: Set Git user to ObyBotCI
+      uses: oblivioncth/actions/git/set-git-user-to-oby-bot@feature/upgrades
+    - name: Checkout Project
+      id: proj-checkout
+      uses: oblivioncth/actions/git/smart-checkout@feature/upgrades
+    - name: Tag master with new version tag
+      uses: oblivioncth/actions/git/add-tag@feature/upgrades
+      with:
+        tag: 'v${{ steps.get-proj-ver.outputs.version }}'
+        message: 'Release v${{ steps.get-proj-ver.outputs.version }}'
+    - name: Move 'latest' tag
+      uses: oblivioncth/actions/git/move-tag@feature/upgrades
+      with:
+        tag: 'latest'
+        message: "Latest Release"
+    - name: Fast-forward merge default into to dev
+      if: always()
+      uses: oblivioncth/actions/git/merge-branches@feature/upgrades
+      with:
+        target_branch: dev
+        ff: only
