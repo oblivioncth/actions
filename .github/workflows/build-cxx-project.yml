@@ -35,14 +35,14 @@ jobs:
           const defaultRuns = [
             { os: 'windows-latest', compiler: 'msvc2022', linkage: 'shared' },
             { os: 'windows-latest', compiler: 'msvc2022', linkage: 'static' },
-            { os: 'ubuntu-20.04', compiler: 'gcc-10', linkage: 'shared' },
-            { os: 'ubuntu-20.04', compiler: 'gcc-10', linkage: 'static' },
-            { os: 'ubuntu-20.04', compiler: 'clang-12', linkage: 'shared' },
-            { os: 'ubuntu-20.04', compiler: 'clang-12', linkage: 'static' },
-            { os: 'ubuntu-22.04', compiler: 'gcc-12', linkage: 'shared' },
-            { os: 'ubuntu-22.04', compiler: 'gcc-12', linkage: 'static' },
-            { os: 'ubuntu-22.04', compiler: 'clang-14', linkage: 'shared' },
-            { os: 'ubuntu-22.04', compiler: 'clang-14', linkage: 'static' },
+            { os: 'ubuntu-20.04', compiler: 'g++-10', linkage: 'shared' },
+            { os: 'ubuntu-20.04', compiler: 'g++-10', linkage: 'static' },
+            { os: 'ubuntu-20.04', compiler: 'clang++-12', linkage: 'shared' },
+            { os: 'ubuntu-20.04', compiler: 'clang++-12', linkage: 'static' },
+            { os: 'ubuntu-22.04', compiler: 'g++-12', linkage: 'shared' },
+            { os: 'ubuntu-22.04', compiler: 'g++-12', linkage: 'static' },
+            { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'shared' },
+            { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'static' },
           ];
           
           function getMatrixModifier(jsonString, allKeys) {
@@ -215,7 +215,7 @@ jobs:
       env:
         project_prefix: ${{ steps.project-meta.outputs.name_uc }}
         use_qt: ${{ steps.project-meta.outputs.uses_qt }}
-        c_comp: ${{ matrix.compiler }}
+        cxx_comp: ${{ matrix.compiler }}
         linkage: ${{ matrix.linkage}}
         cmake_gen: Ninja Multi-Config
         vs_dir: C:/Program Files/Microsoft Visual Studio/2022/Enterprise
@@ -226,8 +226,8 @@ jobs:
         $pp = "$Env:project_prefix"
         $cmake = ($Env:use_qt -eq 'true') ? "$Env:qt_cmake" : "cmake"
         $bsl = ($Env:linkage -eq "shared") ? "ON" : "OFF"
-        $c_comp = "$Env:c_comp"
-        $cxx_comp = "$c_comp"
+        $cxx_comp = "$Env:cxx_comp"
+        $c_comp = "$cxx_comp"
         echo "Using cmake executable '$cmake'"
       
         # Configure - Base
@@ -235,16 +235,15 @@ jobs:
         
         # Configure - Compiler
         if($Env:is_linux -eq 'true') {
-            $cxx_map = @{
-                "clang-" = "clang++-";
-                "gcc-" = "g++-";
+            $c_map = @{
+                "clang++-" = "clang-";
+                "g++-" = "gcc-";
             }
             
-            foreach ($key in $cxx_map.Keys) {
-                $cxx_comp = $cxx_comp -replace [regex]::Escape($key), $cxx_map[$key]
+            foreach ($key in $c_map.Keys) {
+                $c_comp = $c_comp -replace [regex]::Escape($key), $c_map[$key]
             }
-            if($c_comp -eq $cxx_comp) { throw "CXX Compiler not determined!" }
-            echo "cxx_comp=$cxx_comp" >> $Env:GITHUB_ENV # For artifact name
+            if($c_comp -eq $cxx_comp) { throw "C compiler not determined!" }
             
             $cmake_args.Add("-DCMAKE_C_COMPILER=$c_comp")
             $cmake_args.Add("-DCMAKE_CXX_COMPILER=$cxx_comp")
@@ -282,6 +281,8 @@ jobs:
         echo "Build complete."
     - name: Get Project Artifact Name
       id: get_artifact_name
+      env:
+        cxx_comp: ${{ matrix.compiler }}
       run: |
         $artifact_name=$((Get-ChildItem -Path "$Env:project_package_path" -Filter *.zip)[0].BaseName)
         if($Env:is_linux -eq 'true') {
