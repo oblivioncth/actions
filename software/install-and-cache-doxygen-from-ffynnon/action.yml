@@ -8,9 +8,9 @@ inputs:
   os:
     required: true
     description: "'linux' or 'windows'"
-  credentials:
+  access:
     required: true
-    description: "Login in 'user:pass' format"
+    description: "Server access"
 runs:
   using: 'composite'
   steps:
@@ -19,11 +19,11 @@ runs:
       doxygen_setup_ext: exe
     shell: pwsh
     run: |
-      $path = "${{ inputs.os }}"
+      $subpathstart = "tools/doxygen/${{ inputs.os }}"
       $filename = "${{ inputs.version }}.${{ env.doxygen_setup_ext }}"
-      $fullpath = "${path}/${filename}"
+      $subpath = "${subpathstart}/${filename}"
       $config_id = "FFYNNON_DOXYGEN_${{ inputs.version }}_${{ inputs.os }}"
-      echo "_ffynnon_doxygen_fullpath=${fullpath}" >> $Env:GITHUB_ENV
+      echo "_ffynnon_doxygen_subpath=${subpath}" >> $Env:GITHUB_ENV
       echo "_ffynnon_doxygen_config_id=${config_id}" >> $Env:GITHUB_ENV
       echo "_ffynnon_doxygen_temp_path=${{ runner.temp }}/doxygen_setup.${{ env.doxygen_setup_ext }}" >> $Env:GITHUB_ENV
 
@@ -37,15 +37,14 @@ runs:
   - name: Download Doxygen
     if: steps.cache-doxygen.outputs.cache-hit != 'true'
     env:
-      base_url_enc: aAB0AHQAcABzADoALwAvAGMAbABvAHUAZAAuAGYAZgB5AG4AbgBvAG4AZwBhAHIAdwAuAGMAbwBtAC8AcgBlAG0AbwB0AGUALgBwAGgAcAAvAGQAYQB2AC8AZgBpAGwAZQBzAC8AbwBiAHkAYgBvAHQALwB0AG8AbwBsAHMALwBkAG8AeAB5AGcAZQBuAA==
+      base_dir_url: ${{ inputs.access }}
     shell: pwsh
     run: |
       # Path setup
-      $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       $download_path = "${{ env._ffynnon_doxygen_temp_path }}"
       
       # Download
-      curl --user "${{ inputs.credentials }}" --anyauth "$base_url/${{ env._ffynnon_doxygen_fullpath }}" -o "$download_path" --silent --show-error
+      curl --anyauth "$Env:base_dir_url/$Env:_ffynnon_doxygen_subpath" -o "$download_path" --silent --show-error
       
   - name: Install Doxygen
     shell: pwsh

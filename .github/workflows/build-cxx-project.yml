@@ -11,7 +11,7 @@ on:
         required: false
         type: string
     secrets:
-      ffynnon_cred:
+      ffynnon_access:
         required: true
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
     steps:
     - name: Ensure secret is present
       shell: pwsh
-      run: if('${{ secrets.ffynnon_cred }}' -eq '') { throw "Required secret not provided!" }
+      run: if('${{ secrets.ffynnon_access }}' -eq '') { throw "Required secret not provided!" }
     - name: Build matrix
       id: matrix-setup
       env:
@@ -152,7 +152,7 @@ jobs:
         os: ${{ matrix.os }}
         linkage: ${{ matrix.linkage }}
         path: ${{ env.qt_install_dir }}
-        credentials: ${{ secrets.ffynnon_cred }}
+        access: ${{ secrets.ffynnon_access }}
     - name: Install Doxygen (Sourceforge)
       if: steps.project-meta.outputs.has_docs == 'true' && env.is_linux == 'true'
       uses: oblivioncth/actions/ubuntu/install-doxygen-from-sourceforge@feature/upgrades
@@ -164,7 +164,7 @@ jobs:
       with:
         version: 1.10.0
         os: windows
-        credentials: ${{ secrets.ffynnon_cred }}
+        access: ${{ secrets.ffynnon_access }}
     - name: Install Graphviz
       if: steps.project-meta.outputs.has_docs == 'true'
       run: |

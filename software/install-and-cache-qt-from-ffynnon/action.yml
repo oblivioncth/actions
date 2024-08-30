@@ -14,9 +14,9 @@ inputs:
   path:
     required: true
     description: 'Path to install the build to'
-  credentials:
+  access:
     required: true
-    description: "Login in 'user:pass' format"
+    description: "Server access"
   
 runs:
   using: 'composite'
@@ -26,11 +26,11 @@ runs:
       qt_arch_ext: 7z
     shell: pwsh
     run: |
-      $path = "${{ inputs.os }}"
+      $subpathstart = "libraries/binaries/qt/${{ inputs.os }}"
       $filename = "${{ inputs.version }}-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}"
-      $fullpath = "${path}/${filename}"
-      $config_id = "FFYNNON_QT_${{ inputs.version }}_${{ inputs.os }}_${{ inputs.compiler }}_${{ inputs.linkage }}"
-      echo "_ffynnon_qt_fullpath=${fullpath}" >> $Env:GITHUB_ENV
+      $subpath = "${subpathstart}/${filename}"
+      $config_id = "FFYNNON_QT_${{ inputs.version }}_${{ inputs.os }}_${{ inputs.linkage }}"
+      echo "_ffynnon_qt_subpath=${subpath}" >> $Env:GITHUB_ENV
       echo "_ffynnon_qt_config_id=${config_id}" >> $Env:GITHUB_ENV
 
   - name: Cache Qt Build
@@ -44,15 +44,14 @@ runs:
     if: steps.cache-qt.outputs.cache-hit != 'true'
     env:
       qt_arch_ext: 7z
-      base_url_enc: aAB0AHQAcABzADoALwAvAGMAbABvAHUAZAAuAGYAZgB5AG4AbgBvAG4AZwBhAHIAdwAuAGMAbwBtAC8AcgBlAG0AbwB0AGUALgBwAGgAcAAvAGQAYQB2AC8AZgBpAGwAZQBzAC8AbwBiAHkAYgBvAHQALwBsAGkAYgByAGEAcgBpAGUAcwAvAGIAaQBuAGEAcgBpAGUAcwAvAHEAdAA=
+      base_dir_url: ${{ inputs.access }}
     shell: pwsh
     run: |
       # Path setup
       $download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
-      $base_url = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String("${{ env.base_url_enc }}"))
       
       # Download
-      curl --user "${{ inputs.credentials }}" --anyauth "$base_url/${{ env._ffynnon_qt_fullpath }}" -o "$download_path" --silent --show-error
+      curl --anyauth "$Env:base_dir_url/$Env:_ffynnon_qt_subpath" -o "$download_path" --silent --show-error
       
       # Extract
       7z x "$download_path" -o"${{ inputs.path }}"
