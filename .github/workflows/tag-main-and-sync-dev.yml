@@ -5,6 +5,8 @@ jobs:
   tag_default_and_sync_to_dev: # Technically tags the current branch, but this should only be used on default branch merges
     name: Tag default branch merge commit, FF back to dev
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - name: Get project version
       id: get-proj-ver

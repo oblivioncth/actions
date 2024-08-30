@@ -59,6 +59,8 @@ jobs:
       
   create-release:
     name: Create GitHub release
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     env:
       artifacts_path: ${{ github.workspace }}/Artifacts
