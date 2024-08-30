@@ -1,5 +1,5 @@
 release:
- - base_branch: ['main', 'master']
+ - base-branch: ['main', 'master']
 
 enhancement:
  - head-branch: ['^feature/']
