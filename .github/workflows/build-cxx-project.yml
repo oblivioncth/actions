@@ -210,7 +210,7 @@ jobs:
     - name: Build Project
       working-directory: ${{ env.project_src_dir }}
       env:
-        project_prefix: ${{ steps.project-meta.outputs.repo_name_uc }}
+        project_prefix: ${{ steps.project-meta.outputs.name_uc }}
         use_qt: ${{ steps.project-meta.outputs.uses_qt }}
         c_comp: ${{ matrix.compiler }}
         linkage: ${{ matrix.linkage}}

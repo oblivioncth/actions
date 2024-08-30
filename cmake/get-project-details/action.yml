@@ -2,6 +2,15 @@ name: 'Get CMake project details'
 description: 'Gets the details of a CMake project'
 author: 'oblivioncth'
 outputs:
+  name:
+    description: 'Projects name'
+    value: ${{ steps.details.outputs.name }}
+  name_uc:
+    description: 'Projects name in uppercase'
+    value: ${{ steps.details.outputs.name_uc }}
+  name_lc:
+    description: 'Projects name in lowercase'
+    value: ${{ steps.details.outputs.name_lc }}
   version:
     description: 'Project version number'
     value: ${{ steps.details.outputs.version }}
@@ -14,9 +23,6 @@ outputs:
   has_tests:
     description: '"true" if project has tests; otherwise false'
     value: ${{ steps.details.outputs.has_tests }}
-  repo_name_uc:
-    description: 'Projects repository name in uppercase'
-    value: ${{ steps.details.outputs.repo_name_uc }}
 runs:
   using: 'composite'
   steps:
@@ -30,15 +36,22 @@ runs:
       src: ${{ steps.checkout.outputs.path }}
     shell: pwsh
     run: |
-      # Version
+      # Name & Version
       $project_file = Get-Content -Raw "$Env:src/CMakeLists.txt"
       
       # The (?s) is a pwsh specific "miscellaneous construct" that enables single-line mode for
       # the '.' character (i.e. /s for PCRE), and not part of the actual expression
-      if(!($project_file -match '(?s)project\(.*?\s+VERSION\s+(?<projver>\S+)[\)\s]')){
-        throw "Could not get project version!"
+      if(!($project_file -match '(?s)project\(\s*(?<name>\w+)\s+(?:.+\s+)?VERSION\s+(?<version>\d+(?:\.\d+){0,3}).*\)')){
+        throw "Could not match project command!"
       }
-      $version = $Matches.projver
+      
+      $name = $Matches.name
+      $nameUC = $name.ToUpper()
+      $nameLC = $name.ToLower()
+      $version = $Matches.version
+      echo "name=$name" >> $Env:GITHUB_OUTPUT
+      echo "name_lc=$nameLC" >> $Env:GITHUB_OUTPUT
+      echo "name_uc=$nameUC" >> $Env:GITHUB_OUTPUT
       echo "version=$version" >> $Env:GITHUB_OUTPUT
       
       # Qt check
@@ -52,19 +65,16 @@ runs:
       # Test check
       $hasTests = (Get-ChildItem -Path "$Env:src" -Directory -Filter "*test*") ? 'true' : 'false'
       echo "has_tests=$hasTests" >> $Env:GITHUB_OUTPUT
-        
-      # Misc
-      $repoName = "${{ github.event.repository.name }}"
-      $repoNameUC = $repoName.ToUpper()
-      echo "repo_name_uc=$repoNameUC" >> $Env:GITHUB_OUTPUT
       
       # Log
       $details = @"
+      Name: $name
+      Name Uppercase: $nameUC
+      Name Lowercase: $nameLC
       Version: $version
       Uses Qt: $usesQt
       Has Docs: $hasDocs
       Has Tests : $hasTests
-      Uppercase Repo Name: $repoNameUC
       "@
       Write-Host $details
     
