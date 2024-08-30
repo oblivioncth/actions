@@ -21,6 +21,9 @@ jobs:
     outputs:
         build_matrix: ${{ steps.matrix-setup.outputs.build_matrix }}
     steps:
+    - name: Ensure secret is present
+      shell: pwsh
+      run: if('${{ secrets.ffynnon_cred }}' -eq '') { throw "Required secret not provided!" }
     - name: Build matrix
       id: matrix-setup
       env:
