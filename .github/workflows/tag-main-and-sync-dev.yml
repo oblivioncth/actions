@@ -9,8 +9,6 @@ jobs:
     - name: Get project version
       id: get-proj-ver
       uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
-    - name: Set Git user to ObyBotCI
-      uses: oblivioncth/actions/git/set-git-user-to-oby-bot@feature/upgrades
     - name: Checkout Project
       id: proj-checkout
       uses: oblivioncth/actions/git/smart-checkout@feature/upgrades
