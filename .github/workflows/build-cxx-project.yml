@@ -141,6 +141,9 @@ jobs:
         libdbus-1-dev
         libzstd-dev
         libbrotli-dev
+        libdrm-dev
+        libwayland-dev
+        libvulkan-dev
     - name: Install Qt
       if: steps.project-meta.outputs.uses_qt == 'true'
       uses: oblivioncth/actions/software/install-and-cache-qt-from-ffynnon@feature/upgrades
