@@ -11,6 +11,8 @@ jobs:
     - name: Get project version
       id: get-proj-ver
       uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
+    - name: Set Git user to actions bot
+      uses: oblivioncth/actions/git/set-global-git-user@feature/upgrades
     - name: Checkout Project
       id: proj-checkout
       uses: oblivioncth/actions/git/smart-checkout@feature/upgrades
