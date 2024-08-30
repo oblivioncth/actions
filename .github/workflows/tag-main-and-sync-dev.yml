@@ -14,7 +14,7 @@ jobs:
     - name: Checkout Project
       id: proj-checkout
       uses: oblivioncth/actions/git/smart-checkout@feature/upgrades
-    - name: Tag master with new version tag
+    - name: Tag default with new version tag
       uses: oblivioncth/actions/git/add-tag@feature/upgrades
       with:
         tag: 'v${{ steps.get-proj-ver.outputs.version }}'

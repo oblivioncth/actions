@@ -24,8 +24,11 @@ runs:
       t_name: ${{ inputs.tag }}
       t_msg: ${{ inputs.message }}
     run: |
-        $anno_opt=$(($Env:t_msg -ne "") ? "-a -m `"$Env:t_msg`"" : "")
-        git tag $Env:t_name $anno_opt
+        if ($Env:t_msg -ne "") {
+          git tag -a -m "$Env:t_msg" $Env:t_name
+        } else {
+          git tag $Env:t_name
+        }
         git push origin $Env:t_name
         
         
