@@ -40,6 +40,7 @@ jobs:
       uses: actions/github-script@v7
       with:
         script: |
+          const util = require('util');
           const defaultRuns = [
             { os: 'windows-latest', compiler: 'msvc2022', linkage: 'shared' },
             { os: 'windows-latest', compiler: 'msvc2022', linkage: 'static' },
@@ -56,14 +57,15 @@ jobs:
           function getMatrixModifier(jsonString, allKeys) {
               function validateModifier(mod) {
                   const validKeys = ['os', 'compiler', 'linkage'];
-                  if(typeof mod === 'object' && mod !== null)
-                    throw new Error(`Modifier object "${mod}" is invalid!`)
+                  if(typeof mod !== 'object' && mod !== null)
+                    throw new Error(`Modifier object "${util.inspect(mod)}" is invalid!`)
                   if(!Object.keys(mod).every(key => validKeys.includes(key)))
-                    throw new Error(`Modifier object "${mod}" contains invalid keys!`)
+                    throw new Error(`Modifier object "${util.inspect(mod)}" contains invalid keys!`)
                   if(allKeys && Object.keys(mod).length != validKeys.length)
-                    throw new Error(`Modifier object "${mod}" did not contain all the required keys!`)
+                    throw new Error(`Modifier object "${util.inspect(mod)}" did not contain all the required keys!`)
               }
               
+              console.log("Processing Modifier: " + jsonString);
               let parsedJson = JSON.parse(jsonString);
               if(!Array.isArray(parsedJson)) {
                   parsedJson = [parsedJson];
@@ -96,8 +98,8 @@ jobs:
           
           // Output
           const matrix = { include: finalRuns };
-          console.log(JSON.stringify(matrix, null, 2)); // Pretty print
           core.setOutput('build_matrix', JSON.stringify(matrix)); // Compact print
+          console.log("Matrix:\n" + JSON.stringify(matrix, null, 2)); // Pretty print
     
   do-runs:
     name: Perform Runs
