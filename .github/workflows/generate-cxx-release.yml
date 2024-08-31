@@ -8,6 +8,9 @@ on:
         required: false
         type: string
         default: "*_Linux_Static_x64*"
+      name_suffix:
+        required: false
+        default: ""
         
 jobs:
   update-docs:
@@ -88,7 +91,7 @@ jobs:
     - name: Generate release
       uses: softprops/action-gh-release@v2
       with:
-        name: "${{ github.event.repository.name }} Release v${{ steps.details.outputs.version }}"
+        name: "${{ github.event.repository.name }} Release v${{ steps.details.outputs.version }} ${{ inputs.name_suffix }}"
         tag_name: "v${{ steps.details.outputs.version }}"
         fail_on_unmatched_files: true
         generate_release_notes: true
