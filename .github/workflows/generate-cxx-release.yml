@@ -49,7 +49,7 @@ jobs:
       uses: actions/configure-pages@v4
     - name: Upload pages artifact
       if: steps.doc-check.outputs.has_docs == 'true'
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v3
       with:
         path: ${{ steps.doc-folder.outputs.doc_folder }}/doc/html
     - name: Deploy pages artifact
