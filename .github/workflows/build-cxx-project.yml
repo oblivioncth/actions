@@ -7,6 +7,14 @@ on:
       runs_exclude:
         required: false
         type: string
+      qt_version: # Ignored if project doesn't use Qt
+        required: false
+        type: string
+        default: 6.7.2
+      doxygen_version: # Ignored if project doesn't have docs
+        required: false
+        type: string
+        default: 1.10.0 
       pre_build_steps:
         required: false
         type: string
@@ -148,7 +156,7 @@ jobs:
       if: steps.project-meta.outputs.uses_qt == 'true'
       uses: oblivioncth/actions/software/install-and-cache-qt-from-ffynnon@feature/upgrades
       with:
-        version: 6.7.2
+        version: ${{ inputs.qt_version }}
         os: ${{ matrix.os }}
         linkage: ${{ matrix.linkage }}
         path: ${{ env.qt_install_dir }}
@@ -157,12 +165,12 @@ jobs:
       if: steps.project-meta.outputs.has_docs == 'true' && env.is_linux == 'true'
       uses: oblivioncth/actions/ubuntu/install-doxygen-from-sourceforge@feature/upgrades
       with:
-        version: 1.10.0
+        version: ${{ inputs.doxygen_version }}
     - name: Install Doxygen (Ffynnon)
       if: steps.project-meta.outputs.has_docs == 'true' && env.is_win == 'true'
       uses: oblivioncth/actions/software/install-and-cache-doxygen-from-ffynnon@feature/upgrades
       with:
-        version: 1.10.0
+        version: ${{ inputs.doxygen_version }}
         os: windows
         access: ${{ secrets.ffynnon_access }}
     - name: Install Graphviz
