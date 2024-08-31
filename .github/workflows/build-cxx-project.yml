@@ -84,7 +84,7 @@ jobs:
               const excludeFilters = getMatrixModifier(excludeStr, false);
               finalRuns = defaultRuns.filter(run => {
                 return !excludeFilters.some(filter => 
-                  Object.keys(filter).some(key => run[key] === filter[key])
+                  Object.keys(filter).every(key => run[key] === filter[key])
                 );
               });
           }
