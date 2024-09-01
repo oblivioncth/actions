@@ -36,12 +36,15 @@ runs:
       src: ${{ steps.checkout.outputs.path }}
     shell: pwsh
     run: |
-      # Name & Version
+      # Load file
       $project_file = Get-Content -Raw "$Env:src/CMakeLists.txt"
+      
+      # Setup pattern
+      $rgx = '(?s)project\(\s*(?<name>[\w-]+)\s+(?:.+\s+)?VERSION\s+(?<version>\d+(?:\.\d+){0,3}).*\)'
       
       # The (?s) is a pwsh specific "miscellaneous construct" that enables single-line mode for
       # the '.' character (i.e. /s for PCRE), and not part of the actual expression
-      if(!($project_file -match '(?s)project\(\s*(?<name>\w+)\s+(?:.+\s+)?VERSION\s+(?<version>\d+(?:\.\d+){0,3}).*\)')){
+      if(!($project_file -match $rgx)){
         throw "Could not match project command!"
       }
       
