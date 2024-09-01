@@ -10,6 +10,7 @@ on:
         default: "*_Linux_Static_x64*"
       name_suffix:
         required: false
+        type: string
         default: ""
         
 jobs:
