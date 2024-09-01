@@ -90,10 +90,17 @@ jobs:
           $path = $art_dir.fullname
           7z a "${{ env.zips_path }}/${name}.zip" "${path}/*"
         }
+    - name: Form release name
+      id: name
+      run: |
+        name="${{ github.event.repository.name }} Release v${{ steps.details.outputs.version }}"
+        sfx="${{ inputs.name_suffix }}"
+        [ -n "$sfx" ] && name="name sfx"
+        echo "name=$name" >> $GITHUB_OUTPUT
     - name: Generate release
       uses: softprops/action-gh-release@v2
       with:
-        name: "${{ github.event.repository.name }} Release v${{ steps.details.outputs.version }} ${{ inputs.name_suffix }}"
+        name: "${{ steps.name.outputs.name }}"
         tag_name: "v${{ steps.details.outputs.version }}"
         fail_on_unmatched_files: true
         generate_release_notes: true
