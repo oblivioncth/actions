@@ -25,3 +25,4 @@ jobs:
       uses: oblivioncth/actions/git/move-tag@v1
       with:
         tag: '${{ steps.get-major-tag.outputs.major }}'
+        message: Release v${{ steps.get-major-tag.outputs.major }} Series
