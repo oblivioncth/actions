@@ -64,6 +64,7 @@ jobs:
   create-release:
     name: Create GitHub release
     permissions:
+      actions: read
       contents: write
     runs-on: ubuntu-latest
     env:
