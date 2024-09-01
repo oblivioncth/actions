@@ -1,3 +1,5 @@
+# Right now this is only for this repo itself though if more action repos are created
+# it would make sense to make a callable version
 name: Sync Major Tag
 on:
   push:
@@ -21,8 +23,12 @@ jobs:
         } else {
             throw "Invalid tag format: $tag"
         }
+    - name: Checkout repo to use local actions
+      uses: actions/checkout@v4
+    - name: Set git user to bot
+      uses: ./git/set-global-git-user
     - name: Create/move corresponding major tag
-      uses: oblivioncth/actions/git/move-tag@v1
+      uses: ./git/move-tag
       with:
         tag: '${{ steps.get-major-tag.outputs.major }}'
         message: Release v${{ steps.get-major-tag.outputs.major }} Series
