@@ -1,0 +1,308 @@
+on:
+  workflow_call:
+    inputs:
+      runs_include:
+        required: false
+        type: string
+      runs_exclude:
+        required: false
+        type: string
+      qt_version: # Ignored if project doesn't use Qt
+        required: false
+        type: string
+        default: 6.7.2
+      doxygen_version: # Ignored if project doesn't have docs
+        required: false
+        type: string
+        default: 1.10.0 
+      pre_build_steps:
+        required: false
+        type: string
+    secrets:
+      ffynnon_access:
+        required: true
+
+jobs:
+  prepare-runs:
+    name: Prepare Runs
+    runs-on: ubuntu-latest
+    outputs:
+        build_matrix: ${{ steps.matrix-setup.outputs.build_matrix }}
+    steps:
+    - name: Ensure secret is present
+      shell: pwsh
+      run: if('${{ secrets.ffynnon_access }}' -eq '') { throw "Required secret not provided!" }
+    - name: Build matrix
+      id: matrix-setup
+      env:
+        runs_include: "${{ inputs.runs_include }}"
+        runs_exclude: "${{ inputs.runs_exclude }}"
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const util = require('util');
+          const defaultRuns = [
+            { os: 'windows-latest', compiler: 'msvc2022', linkage: 'shared' },
+            { os: 'windows-latest', compiler: 'msvc2022', linkage: 'static' },
+            { os: 'ubuntu-20.04', compiler: 'g++-10', linkage: 'shared' },
+            { os: 'ubuntu-20.04', compiler: 'g++-10', linkage: 'static' },
+            { os: 'ubuntu-20.04', compiler: 'clang++-12', linkage: 'shared' },
+            { os: 'ubuntu-20.04', compiler: 'clang++-12', linkage: 'static' },
+            { os: 'ubuntu-22.04', compiler: 'g++-12', linkage: 'shared' },
+            { os: 'ubuntu-22.04', compiler: 'g++-12', linkage: 'static' },
+            { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'shared' },
+            { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'static' },
+          ];
+          
+          function getMatrixModifier(jsonString, allKeys) {
+              function validateModifier(mod) {
+                  const validKeys = ['os', 'compiler', 'linkage'];
+                  if(typeof mod !== 'object' && mod !== null)
+                    throw new Error(`Modifier object "${util.inspect(mod)}" is invalid!`)
+                  if(!Object.keys(mod).every(key => validKeys.includes(key)))
+                    throw new Error(`Modifier object "${util.inspect(mod)}" contains invalid keys!`)
+                  if(allKeys && Object.keys(mod).length != validKeys.length)
+                    throw new Error(`Modifier object "${util.inspect(mod)}" did not contain all the required keys!`)
+              }
+              
+              console.log("Processing Modifier: " + jsonString);
+              let parsedJson = JSON.parse(jsonString);
+              if(!Array.isArray(parsedJson)) {
+                  parsedJson = [parsedJson];
+              }
+              parsedJson.forEach(validateModifier);
+                
+              return parsedJson;
+          }
+          
+          // Setup final runs
+          let finalRuns = defaultRuns;
+          
+          // Handle excludes
+          const excludeStr = process.env.runs_exclude;
+          if(excludeStr) {
+              const excludeFilters = getMatrixModifier(excludeStr, false);
+              finalRuns = defaultRuns.filter(run => {
+                return !excludeFilters.some(filter => 
+                  Object.keys(filter).every(key => run[key] === filter[key])
+                );
+              });
+          }
+          
+          // Handle includes
+          const includeStr = process.env.runs_include;
+          if(includeStr) {
+              const includeEntries = getMatrixModifier(includeStr, true);
+              finalRuns.push(...includeEntries);
+          }
+          
+          // Output
+          const matrix = { include: finalRuns };
+          core.setOutput('build_matrix', JSON.stringify(matrix)); // Compact print
+          console.log("Matrix:\n" + JSON.stringify(matrix, null, 2)); // Pretty print
+    
+  do-runs:
+    name: Perform Runs
+    needs: prepare-runs
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-runs.outputs.build_matrix) }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      qt_install_dir: ${{ github.workspace }}/Qt/Install
+      project_src_suffix: Project/Source
+      project_src_dir: ${{ github.workspace }}/Project/Source
+      project_build_dir: ${{ github.workspace }}/Project/Build
+      is_win: ${{ startsWith(matrix.os, 'windows') }}
+      is_linux: ${{ startsWith(matrix.os, 'ubuntu') }}
+      pre_action_sub_path: ./.ob_actions/pre-build-action
+    steps:
+    - name: Set derived variables with shell because GitHub Actions env context sucks
+      run: |
+        echo "project_package_path=${{ env.project_build_dir }}/out/dist" >> $Env:GITHUB_ENV
+        $project_install_path="${{ env.project_build_dir }}/out/install"
+        echo "project_install_path=$project_install_path" >> $Env:GITHUB_ENV
+        echo "qt_cmake=${Env:qt_install_dir}/bin/qt-cmake" >> $Env:GITHUB_ENV
+    - name: Checkout Project
+      uses: actions/checkout@v4
+      with:
+        path: ${{ env.project_src_suffix }}
+        fetch-depth: 0 # Required for verbose versioning to work correctly
+    - name: Detect Project Details
+      id: project-meta
+      uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
+    - name: Update Package Index [Linux]
+      if: env.is_linux == 'true'
+      run: sudo apt-get update
+    - name: Install General Qt Dependencies [Linux]
+      if: steps.project-meta.outputs.uses_qt == 'true' && env.is_linux == 'true'
+      run: >
+        sudo apt-get install
+        libglu1-mesa-dev
+        libegl1-mesa-dev
+        libx11-xcb-dev
+        libxkbcommon-dev
+        libxkbcommon-x11-dev
+        libxcb-*-dev
+        libharfbuzz-dev 
+        libdbus-1-dev
+        libzstd-dev
+        libbrotli-dev
+        libdrm-dev
+        libwayland-dev
+        libvulkan-dev
+    - name: Install Qt
+      if: steps.project-meta.outputs.uses_qt == 'true'
+      uses: oblivioncth/actions/software/install-and-cache-qt-from-ffynnon@feature/upgrades
+      with:
+        version: ${{ inputs.qt_version }}
+        os: ${{ matrix.os }}
+        linkage: ${{ matrix.linkage }}
+        path: ${{ env.qt_install_dir }}
+        access: ${{ secrets.ffynnon_access }}
+    - name: Install Doxygen (Sourceforge)
+      if: steps.project-meta.outputs.has_docs == 'true' && env.is_linux == 'true'
+      uses: oblivioncth/actions/ubuntu/install-doxygen-from-sourceforge@feature/upgrades
+      with:
+        version: ${{ inputs.doxygen_version }}
+    - name: Install Doxygen (Ffynnon)
+      if: steps.project-meta.outputs.has_docs == 'true' && env.is_win == 'true'
+      uses: oblivioncth/actions/software/install-and-cache-doxygen-from-ffynnon@feature/upgrades
+      with:
+        version: ${{ inputs.doxygen_version }}
+        os: windows
+        access: ${{ secrets.ffynnon_access }}
+    - name: Install Graphviz
+      if: steps.project-meta.outputs.has_docs == 'true'
+      run: |
+        if($Env:is_win -eq 'true') {
+          choco install graphviz
+        } else {
+          sudo apt-get install graphviz
+        }
+    - name: Install Ninja [Linux]
+      if: env.is_linux == 'true'
+      run: sudo apt-get install ninja-build
+    - name: Prepare Pre-build Steps
+      if: inputs.pre_build_steps != ''
+      env:
+        pre_steps: ${{ inputs.pre_build_steps }}
+      run: |
+        # Correct steps indentation
+        $indentedSteps = $Env:pre_steps -split "`n" | ForEach-Object { "    $_" } | Out-String
+
+        # Create the composite action
+        $action = @"
+        name: 'Dynamic CXX Project Pre-build Action'
+        description: 'Runs optional steps as provided'
+        author: 'oblivioncth'
+        runs:
+          using: 'composite'
+          steps:
+        $indentedSteps
+        "@
+
+        # Write action to disk
+        New-Item -ItemType Directory -Force -Path "$Env:pre_action_sub_path"
+        $action | Out-File "$Env:GITHUB_WORKSPACE/$Env:pre_action_sub_path/action.yml" -Force
+    - name: Perform Pre-build Steps
+      if: inputs.pre_build_steps != ''
+      env: # Essentially inputs for the script
+        run_os: ${{ matrix.os }}
+        run_is_win: ${{ startsWith(matrix.os, 'windows') }}
+        run_is_linux: ${{ startsWith(matrix.os, 'ubuntu') }}
+      uses: jenseng/dynamic-uses@v1 # Delays call, for when there are no pre-steps, and allows variable expansion
+      with:
+        uses: ${{ env.pre_action_sub_path }}
+    - name: Setup Dev Environment [Windows]
+      if: env.is_win == 'true'
+      uses: ilammy/msvc-dev-cmd@v1
+    - name: Build Project
+      working-directory: ${{ env.project_src_dir }}
+      env:
+        project_prefix: ${{ steps.project-meta.outputs.name_uc }}
+        use_qt: ${{ steps.project-meta.outputs.uses_qt }}
+        cxx_comp: ${{ matrix.compiler }}
+        linkage: ${{ matrix.linkage}}
+        cmake_gen: Ninja Multi-Config
+        vs_dir: C:/Program Files/Microsoft Visual Studio/2022/Enterprise
+        has_docs: ${{ steps.project-meta.outputs.has_docs }}
+        has_tests: ${{ steps.project-meta.outputs.has_tests }}
+      run: |
+        # Vars
+        $pp = "$Env:project_prefix"
+        $cmake = ($Env:use_qt -eq 'true') ? "$Env:qt_cmake" : "cmake"
+        $bsl = ($Env:linkage -eq "shared") ? "ON" : "OFF"
+        $cxx_comp = "$Env:cxx_comp"
+        $c_comp = "$cxx_comp"
+        echo "Using cmake executable '$cmake'"
+      
+        # Configure - Base
+        $cmake_args = [System.Collections.Generic.List[object]]@('-G', "$Env:cmake_gen", '-S', "$Env:project_src_dir", '-B', "$Env:project_build_dir", "-DBUILD_SHARED_LIBS=$bsl")
+        
+        # Configure - Compiler
+        if($Env:is_linux -eq 'true') {
+            $c_map = @{
+                "clang++-" = "clang-";
+                "g++-" = "gcc-";
+            }
+            
+            foreach ($key in $c_map.Keys) {
+                $c_comp = $c_comp -replace [regex]::Escape($key), $c_map[$key]
+            }
+            if($c_comp -eq $cxx_comp) { throw "C compiler not determined!" }
+            
+            $cmake_args.Add("-DCMAKE_C_COMPILER=$c_comp")
+            $cmake_args.Add("-DCMAKE_CXX_COMPILER=$cxx_comp")
+        }
+        
+        # Configure - Doc
+        if($Env:has_docs -eq 'true') {
+            $cmake_args.Add("-D${pp}_DOCS=ON")
+        }
+        
+        # Configure - Tests
+        if($Env:has_tests -eq 'true') {
+            $cmake_args.Add("-D${pp}_TESTS=ON")
+        }
+        
+        # Configure
+        echo "Configuring CMake..." 
+        echo "Args"
+        echo "$cmake_args"
+        & "$cmake" $cmake_args.ToArray()
+        
+        # Build
+        echo "Changing to build directory..."
+        cd "$Env:project_build_dir"
+        echo "Building Project Release..."
+        cmake --build . --target all --config Release
+        if($Env:has_tests -eq 'true') {
+            echo "Running tests..."
+            ctest -C Release --output-on-failure
+        }
+        echo "Installing Project Release..."
+        cmake --install . --config Release
+        echo "Packaging Project..."
+        cpack -C "Release"
+        echo "Build complete."
+    - name: Get Project Artifact Name
+      id: get_artifact_name
+      env:
+        cxx_comp: ${{ matrix.compiler }}
+      run: |
+        $artifact_name=$((Get-ChildItem -Path "$Env:project_package_path" -Filter *.zip)[0].BaseName)
+        if($Env:is_linux -eq 'true') {
+            $artifact_name += " [$Env:cxx_comp]"
+        }
+        echo "current_artifact_name=$artifact_name" >> $Env:GITHUB_ENV
+    - name: Upload Project build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.current_artifact_name }}
+        path: ${{ env.project_install_path }}
+        if-no-files-found: error
+    
