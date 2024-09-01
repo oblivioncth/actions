@@ -250,9 +250,10 @@ jobs:
                 "g++-" = "gcc-";
             }
             
-            foreach ($key in $c_map.Keys) {
-                $c_comp = $c_comp -replace [regex]::Escape($key), $c_map[$key]
-            }
+            $c_map.GetEnumerator().ForEach({
+                $rgx= '^' + [regex]::Escape($_.Key)
+                $c_comp = $c_comp -replace $rgx, $_.Value
+            })
             if($c_comp -eq $cxx_comp) { throw "C compiler not determined!" }
             
             $cmake_args.Add("-DCMAKE_C_COMPILER=$c_comp")
