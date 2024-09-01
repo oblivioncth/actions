@@ -1,0 +1,57 @@
+name: 'Install and Cache Qt From Ffynnon'
+description: 'Installs the specified Qt build (x64) from Ffynnon and then caches it'
+author: 'oblivioncth'
+inputs:
+  version:
+    required: true
+    description: The version of Qt to install, specified as x.y.z
+  os:
+    required: true
+    description: "Matches the 'runs-on' parameter of the job"
+  linkage:
+    required: true
+    description: "'shared' or 'static'"
+  path:
+    required: true
+    description: 'Path to install the build to'
+  access:
+    required: true
+    description: "Server access"
+  
+runs:
+  using: 'composite'
+  steps:
+  - name: Determine filename
+    env:
+      qt_arch_ext: 7z
+    shell: pwsh
+    run: |
+      $subpathstart = "libraries/binaries/qt/${{ inputs.os }}"
+      $filename = "${{ inputs.version }}-${{ inputs.linkage }}-release.${{ env.qt_arch_ext }}"
+      $subpath = "${subpathstart}/${filename}"
+      $config_id = "FFYNNON_QT_${{ inputs.version }}_${{ inputs.os }}_${{ inputs.linkage }}"
+      echo "_ffynnon_qt_subpath=${subpath}" >> $Env:GITHUB_ENV
+      echo "_ffynnon_qt_config_id=${config_id}" >> $Env:GITHUB_ENV
+
+  - name: Cache Qt Build
+    id: cache-qt
+    uses: actions/cache@v4
+    with:
+      path: ${{ inputs.path }}
+      key: ${{ env._ffynnon_qt_config_id }}
+  
+  - name: Install Qt
+    if: steps.cache-qt.outputs.cache-hit != 'true'
+    env:
+      qt_arch_ext: 7z
+      base_dir_url: ${{ inputs.access }}
+    shell: pwsh
+    run: |
+      # Path setup
+      $download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
+      
+      # Download
+      curl --anyauth "$Env:base_dir_url/$Env:_ffynnon_qt_subpath" -o "$download_path" --silent --show-error
+      
+      # Extract
+      7z x "$download_path" -o"${{ inputs.path }}"

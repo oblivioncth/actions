@@ -1,0 +1,18 @@
+name: 'Set global git user'
+description: 'Sets the user information of the current runs git client to the specified account'
+author: 'oblivioncth'
+inputs:
+  username:
+    required: false
+    default: 'github-actions[bot]'
+  email:
+    required: false
+    default: '41898282+github-actions[bot]@users.noreply.github.com'
+runs:
+  using: 'composite'
+  steps:
+  - name: Set git user info
+    shell: bash
+    run: |
+      git config --global user.name "${{ inputs.username }}"
+      git config --global user.email "${{ inputs.email }}"

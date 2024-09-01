@@ -1,0 +1,11 @@
+name: 'Label Pull-request Conventionally'
+description: 'Labels the pull-request that triggered the calling workflow by OB convention'
+author: 'oblivioncth'
+runs:
+  using: 'composite'
+  steps:
+  - name: Label PR
+    uses: actions/labeler@v5
+    with:
+        sync-labels: true
+        configuration-path: ${{ github.action_path }}/labeler.yml

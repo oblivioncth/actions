@@ -1,0 +1,52 @@
+name: 'Install and Cache Doxygen From Ffynnon'
+description: 'Downloads the specified Doxygen version from Ffynnon, caches it, the installs it'
+author: 'oblivioncth'
+inputs:
+  version:
+    required: true
+    description: The version of Doxygen to install, specified as x.y.z
+  os:
+    required: true
+    description: "'linux' or 'windows'"
+  access:
+    required: true
+    description: "Server access"
+runs:
+  using: 'composite'
+  steps:
+  - name: Determine filename and temp path
+    env:
+      doxygen_setup_ext: exe
+    shell: pwsh
+    run: |
+      $subpathstart = "tools/doxygen/${{ inputs.os }}"
+      $filename = "${{ inputs.version }}.${{ env.doxygen_setup_ext }}"
+      $subpath = "${subpathstart}/${filename}"
+      $config_id = "FFYNNON_DOXYGEN_${{ inputs.version }}_${{ inputs.os }}"
+      echo "_ffynnon_doxygen_subpath=${subpath}" >> $Env:GITHUB_ENV
+      echo "_ffynnon_doxygen_config_id=${config_id}" >> $Env:GITHUB_ENV
+      echo "_ffynnon_doxygen_temp_path=${{ runner.temp }}/doxygen_setup.${{ env.doxygen_setup_ext }}" >> $Env:GITHUB_ENV
+
+  - name: Cache Doxygen Installer
+    id: cache-doxygen
+    uses: actions/cache@v4
+    with:
+      path: ${{ env._ffynnon_doxygen_temp_path }}
+      key: ${{ env._ffynnon_doxygen_config_id }}
+  
+  - name: Download Doxygen
+    if: steps.cache-doxygen.outputs.cache-hit != 'true'
+    env:
+      base_dir_url: ${{ inputs.access }}
+    shell: pwsh
+    run: |
+      # Path setup
+      $download_path = "${{ env._ffynnon_doxygen_temp_path }}"
+      
+      # Download
+      curl --anyauth "$Env:base_dir_url/$Env:_ffynnon_doxygen_subpath" -o "$download_path" --silent --show-error
+      
+  - name: Install Doxygen
+    shell: pwsh
+    run: |
+      Start-Process -FilePath "${{ env._ffynnon_doxygen_temp_path }}" -ArgumentList "/VERYSILENT" -Wait

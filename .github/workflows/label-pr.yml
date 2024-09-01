@@ -1,0 +1,13 @@
+on:
+  workflow_call:
+    
+jobs:
+  label-pr:
+    name: Label pull-request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Label via convention
+        uses: oblivioncth/actions/pull-request/label-pr-conventionally@v1

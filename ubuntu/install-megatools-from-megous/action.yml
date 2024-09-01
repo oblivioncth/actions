@@ -1,0 +1,22 @@
+name: 'Install Megatools From Megous'
+description: 'Installs the specified megatools version from the megous website'
+author: 'oblivioncth'
+inputs:
+  version:
+    required: true
+    description: The version of megatools to install, specified as x.y.z.yyyymmdd
+runs:
+  using: 'composite'
+  steps:
+  - name: Install Megatools
+    env:
+      megatools_arch_ext: tar.gz
+      megatools_repo: https://megatools.megous.com/builds/builds/
+      download_dir: ${{ github.workspace }}/ob_download
+    shell: bash
+    run: |
+      curl "$megatools_repo/megatools-${{ inputs.version }}-linux-x86_64.$megatools_arch_ext" --output "$download_dir/megatools-${{ inputs.version }}-linux-x86_64.$megatools_arch_ext" --create-dirs --location --silent --show-error
+      cd $download_dir
+      tar xf "megatools-${{ inputs.version }}-linux-x86_64.$megatools_arch_ext"
+      cd "megatools-${{ inputs.version }}-linux-x86_64"
+      cp -p megatools /usr/local/bin

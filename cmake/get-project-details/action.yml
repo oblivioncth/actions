@@ -1,0 +1,80 @@
+name: 'Get CMake project details'
+description: 'Gets the details of a CMake project'
+author: 'oblivioncth'
+outputs:
+  name:
+    description: 'Projects name'
+    value: ${{ steps.details.outputs.name }}
+  name_uc:
+    description: 'Projects name in uppercase'
+    value: ${{ steps.details.outputs.name_uc }}
+  name_lc:
+    description: 'Projects name in lowercase'
+    value: ${{ steps.details.outputs.name_lc }}
+  version:
+    description: 'Project version number'
+    value: ${{ steps.details.outputs.version }}
+  uses_qt:
+    description: '"true" if project uses Qt; otherwise false'
+    value: ${{ steps.details.outputs.uses_qt }}
+  has_docs:
+    description: '"true" if project has documentation; otherwise false'
+    value: ${{ steps.details.outputs.has_docs }}
+  has_tests:
+    description: '"true" if project has tests; otherwise false'
+    value: ${{ steps.details.outputs.has_tests }}
+runs:
+  using: 'composite'
+  steps:
+  - uses: oblivioncth/actions/.github/self_link@dev
+  - name: Checkout Project
+    id: checkout
+    uses: ./.this_repo/git/smart-checkout
+  - name: Detect Project Details
+    id: details
+    env:
+      src: ${{ steps.checkout.outputs.path }}
+    shell: pwsh
+    run: |
+      # Name & Version
+      $project_file = Get-Content -Raw "$Env:src/CMakeLists.txt"
+      
+      # The (?s) is a pwsh specific "miscellaneous construct" that enables single-line mode for
+      # the '.' character (i.e. /s for PCRE), and not part of the actual expression
+      if(!($project_file -match '(?s)project\(\s*(?<name>\w+)\s+(?:.+\s+)?VERSION\s+(?<version>\d+(?:\.\d+){0,3}).*\)')){
+        throw "Could not match project command!"
+      }
+      
+      $name = $Matches.name
+      $nameUC = $name.ToUpper()
+      $nameLC = $name.ToLower()
+      $version = $Matches.version
+      echo "name=$name" >> $Env:GITHUB_OUTPUT
+      echo "name_lc=$nameLC" >> $Env:GITHUB_OUTPUT
+      echo "name_uc=$nameUC" >> $Env:GITHUB_OUTPUT
+      echo "version=$version" >> $Env:GITHUB_OUTPUT
+      
+      # Qt check
+      $usesQt = (Select-String -Path "$Env:src/CMakeLists.txt" -Pattern ("find_package(Qt","ob_find_qt6_package(") -SimpleMatch -Quiet) ? 'true' : 'false'
+      echo "uses_qt=$usesQt" >> $Env:GITHUB_OUTPUT
+        
+      # Doc check
+      $hasDocs = (Get-ChildItem -Path "$Env:src" -Directory -Filter "*doc*") ? 'true' : 'false'
+      echo "has_docs=$hasDocs" >> $Env:GITHUB_OUTPUT
+        
+      # Test check
+      $hasTests = (Get-ChildItem -Path "$Env:src" -Directory -Filter "*test*") ? 'true' : 'false'
+      echo "has_tests=$hasTests" >> $Env:GITHUB_OUTPUT
+      
+      # Log
+      $details = @"
+      Name: $name
+      Name Uppercase: $nameUC
+      Name Lowercase: $nameLC
+      Version: $version
+      Uses Qt: $usesQt
+      Has Docs: $hasDocs
+      Has Tests : $hasTests
+      "@
+      Write-Host $details
+    
