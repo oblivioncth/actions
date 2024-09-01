@@ -49,8 +49,8 @@ runs:
       }
       
       $name = $Matches.name
-      $nameUC = $name.ToUpper()
-      $nameLC = $name.ToLower()
+      $nameUC = $name.ToUpper() -replace '-','_'
+      $nameLC = $name.ToLower() -replace '-','_'
       $version = $Matches.version
       echo "name=$name" >> $Env:GITHUB_OUTPUT
       echo "name_lc=$nameLC" >> $Env:GITHUB_OUTPUT
