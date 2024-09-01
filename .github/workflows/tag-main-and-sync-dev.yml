@@ -10,25 +10,25 @@ jobs:
     steps:
     - name: Get project version
       id: get-proj-ver
-      uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
+      uses: oblivioncth/actions/cmake/get-project-details@v1
     - name: Set Git user to actions bot
-      uses: oblivioncth/actions/git/set-global-git-user@feature/upgrades
+      uses: oblivioncth/actions/git/set-global-git-user@v1
     - name: Checkout Project
       id: proj-checkout
-      uses: oblivioncth/actions/git/smart-checkout@feature/upgrades
+      uses: oblivioncth/actions/git/smart-checkout@v1
     - name: Tag default with new version tag
-      uses: oblivioncth/actions/git/add-tag@feature/upgrades
+      uses: oblivioncth/actions/git/add-tag@v1
       with:
         tag: 'v${{ steps.get-proj-ver.outputs.version }}'
         message: 'Release v${{ steps.get-proj-ver.outputs.version }}'
     - name: Move 'latest' tag
-      uses: oblivioncth/actions/git/move-tag@feature/upgrades
+      uses: oblivioncth/actions/git/move-tag@v1
       with:
         tag: 'latest'
         message: "Latest Release"
     - name: Fast-forward merge default into to dev
       if: always()
-      uses: oblivioncth/actions/git/merge-branches@feature/upgrades
+      uses: oblivioncth/actions/git/merge-branches@v1
       with:
         target_branch: dev
         ff: only

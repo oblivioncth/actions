@@ -133,7 +133,7 @@ jobs:
         fetch-depth: 0 # Required for verbose versioning to work correctly
     - name: Detect Project Details
       id: project-meta
-      uses: oblivioncth/actions/cmake/get-project-details@feature/upgrades
+      uses: oblivioncth/actions/cmake/get-project-details@v1
     - name: Update Package Index [Linux]
       if: env.is_linux == 'true'
       run: sudo apt-get update
@@ -156,7 +156,7 @@ jobs:
         libvulkan-dev
     - name: Install Qt
       if: steps.project-meta.outputs.uses_qt == 'true'
-      uses: oblivioncth/actions/software/install-and-cache-qt-from-ffynnon@feature/upgrades
+      uses: oblivioncth/actions/software/install-and-cache-qt-from-ffynnon@v1
       with:
         version: ${{ inputs.qt_version }}
         os: ${{ matrix.os }}
@@ -165,12 +165,12 @@ jobs:
         access: ${{ secrets.ffynnon_access }}
     - name: Install Doxygen (Sourceforge)
       if: steps.project-meta.outputs.has_docs == 'true' && env.is_linux == 'true'
-      uses: oblivioncth/actions/ubuntu/install-doxygen-from-sourceforge@feature/upgrades
+      uses: oblivioncth/actions/ubuntu/install-doxygen-from-sourceforge@v1
       with:
         version: ${{ inputs.doxygen_version }}
     - name: Install Doxygen (Ffynnon)
       if: steps.project-meta.outputs.has_docs == 'true' && env.is_win == 'true'
-      uses: oblivioncth/actions/software/install-and-cache-doxygen-from-ffynnon@feature/upgrades
+      uses: oblivioncth/actions/software/install-and-cache-doxygen-from-ffynnon@v1
       with:
         version: ${{ inputs.doxygen_version }}
         os: windows

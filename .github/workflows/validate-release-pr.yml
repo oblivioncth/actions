@@ -7,4 +7,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Ensure higher version
-      uses: oblivioncth/actions/cmake/ensure-project-version-gt-tag@feature/upgrades
+      uses: oblivioncth/actions/cmake/ensure-project-version-gt-tag@v1

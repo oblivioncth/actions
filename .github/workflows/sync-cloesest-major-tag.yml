@@ -22,6 +22,6 @@ jobs:
             throw "Invalid tag format: $tag"
         }
     - name: Create/move corresponding major tag
-      uses: oblivioncth/actions/git/move-tag@feature/upgrades
+      uses: oblivioncth/actions/git/move-tag@v1
       with:
         tag: '${{ steps.get-major-tag.outputs.major }}'
