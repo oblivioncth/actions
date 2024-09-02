@@ -7,7 +7,7 @@ runs:
   - uses: oblivioncth/actions/.github/self_link@dev
   - name: Get project version
     id: get-proj-ver
-    uses: ./.this_repo/cmake/get-project-version
+    uses: ./.this_repo/cmake/get-project-details
   - name: Checkout Project
     id: proj-checkout
     uses: ./.this_repo/git/smart-checkout
