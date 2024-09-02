@@ -223,7 +223,7 @@ jobs:
     - name: Build Project
       working-directory: ${{ env.project_src_dir }}
       env:
-        project_prefix: ${{ steps.project-meta.outputs.name_uc }}
+        namespace_uc: ${{ steps.project-meta.outputs.namespace_uc }}
         use_qt: ${{ steps.project-meta.outputs.uses_qt }}
         cxx_comp: ${{ matrix.compiler }}
         linkage: ${{ matrix.linkage}}
@@ -233,7 +233,7 @@ jobs:
         has_tests: ${{ steps.project-meta.outputs.has_tests }}
       run: |
         # Vars
-        $pp = "$Env:project_prefix"
+        $nsuc = "$Env:namespace_uc"
         $cmake = ($Env:use_qt -eq 'true') ? "$Env:qt_cmake" : "cmake"
         $bsl = ($Env:linkage -eq "shared") ? "ON" : "OFF"
         $cxx_comp = "$Env:cxx_comp"
@@ -262,12 +262,12 @@ jobs:
         
         # Configure - Doc
         if($Env:has_docs -eq 'true') {
-            $cmake_args.Add("-D${pp}_DOCS=ON")
+            $cmake_args.Add("-D${nsuc}_DOCS=ON")
         }
         
         # Configure - Tests
         if($Env:has_tests -eq 'true') {
-            $cmake_args.Add("-D${pp}_TESTS=ON")
+            $cmake_args.Add("-D${nsuc}_TESTS=ON")
         }
         
         # Configure
