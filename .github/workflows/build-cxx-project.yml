@@ -214,6 +214,7 @@ jobs:
         run_os: ${{ matrix.os }}
         run_is_win: ${{ startsWith(matrix.os, 'windows') }}
         run_is_linux: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run_compiler: ${{ matrix.compiler }}
       uses: jenseng/dynamic-uses@v1 # Delays call, for when there are no pre-steps, and allows variable expansion
       with:
         uses: ${{ env.pre_action_sub_path }}
