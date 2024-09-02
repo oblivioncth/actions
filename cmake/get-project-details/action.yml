@@ -11,6 +11,15 @@ outputs:
   name_lc:
     description: 'Projects name in lowercase'
     value: ${{ steps.details.outputs.name_lc }}
+  namespace:
+    description: 'Projects namespace'
+    value: ${{ steps.details.outputs.namespace }}
+  namespace_uc:
+    description: 'Projects namespace in uppercase'
+    value: ${{ steps.details.outputs.namespace_uc }}
+  namespace_lc:
+    description: 'Projects namespace in lowercase'
+    value: ${{ steps.details.outputs.namespace_lc }}
   version:
     description: 'Project version number'
     value: ${{ steps.details.outputs.version }}
@@ -36,26 +45,36 @@ runs:
       src: ${{ steps.checkout.outputs.path }}
     shell: pwsh
     run: |
-      # Load file
+      # Load main CMakeLists.txt
       $project_file = Get-Content -Raw "$Env:src/CMakeLists.txt"
       
-      # Setup pattern
-      $rgx = '(?s)project\(\s*(?<name>[\w-]+)\s+(?:.+\s+)?VERSION\s+(?<version>\d+(?:\.\d+){0,3}).*\)'
-      
+      # Get project name and version from project command
+      #
       # The (?s) is a pwsh specific "miscellaneous construct" that enables single-line mode for
       # the '.' character (i.e. /s for PCRE), and not part of the actual expression
+      $rgx = '(?s)project\(\s*(?<name>[\w-]+)\s+(?:.+\s+)?VERSION\s+(?<version>\d+(?:\.\d+){0,3}).*\)'
       if(!($project_file -match $rgx)){
         throw "Could not match project command!"
       }
       
       $name = $Matches.name
-      $nameUC = $name.ToUpper() -replace '-','_'
       $nameLC = $name.ToLower() -replace '-','_'
+      $nameUC = $name.ToUpper() -replace '-','_'
       $version = $Matches.version
       echo "name=$name" >> $Env:GITHUB_OUTPUT
       echo "name_lc=$nameLC" >> $Env:GITHUB_OUTPUT
       echo "name_uc=$nameUC" >> $Env:GITHUB_OUTPUT
       echo "version=$version" >> $Env:GITHUB_OUTPUT
+      
+      # Get project namespace from ob_standard_project_setup() command, fallback to name
+      # if not present (which is what that function does itself)
+      $rgx = '(?s)ob_standard_project_setup\(.*NAMESPACE\s+"?(?<namespace>[\w-]+).*\)'
+      $namespace = ($project_file -match $rgx) ? $Matches.namespace : $name
+      $namespaceLC = $namespace.ToLower() -replace '-','_'
+      $namespaceUC = $namespace.ToUpper() -replace '-','_'
+      echo "namespace=$name" >> $Env:GITHUB_OUTPUT
+      echo "namespace_lc=$namespaceLC" >> $Env:GITHUB_OUTPUT
+      echo "namespace_uc=$namespaceUC" >> $Env:GITHUB_OUTPUT
       
       # Qt check
       $usesQt = (Select-String -Path "$Env:src/CMakeLists.txt" -Pattern ("find_package(Qt","ob_find_qt6_package(") -SimpleMatch -Quiet) ? 'true' : 'false'
