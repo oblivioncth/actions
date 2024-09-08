@@ -10,4 +10,4 @@ jobs:
       pull-requests: write
     steps:
       - name: Label via convention
-        uses: oblivioncth/actions/pull-request/label-pr-conventionally@v1
+        uses: oblivioncth/actions/labels/label-pr-conventionally@v1
