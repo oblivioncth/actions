@@ -29,5 +29,6 @@ jobs:
       - name: Sync 2
         uses: BetaHuhn/repo-file-sync-action@v1
         with:
-          gh_pat: ${{ steps.get-token.outputs.token }}
-          is_fine_grained: true
+          gh_installation_token: ${{ steps.get-token.outputs.token }}
+          git_username: ${{ steps.get-token.outputs.username }}
+          git_email: ${{ steps.get-token.outputs.email }}

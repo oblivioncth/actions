@@ -6,7 +6,11 @@ inputs:
     required: true
 outputs:
   token:
-    value: ${{ steps.app-token.outputs.name }}
+    value: ${{ steps.app-token.outputs.token }}
+  username:
+    value: "oby-bot[bot]"
+  email:
+    value: "181141642+oby-bot[bot]@users.noreply.github.com"
 runs:
   using: 'composite'
   steps:
