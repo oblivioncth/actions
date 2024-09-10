@@ -1,0 +1,20 @@
+name: 'Sync standard labels'
+description: 'Synchronizes standard labels from action repo, while keeping repo specific labels intact'
+author: 'oblivioncth'
+runs:
+  using: 'composite'
+  steps:
+  - name: Check for local labels
+    id: local-check
+    shell: pwsh
+    run: |
+      $localPath = ".github/labels.yml"
+      $optLocalPath = (Test-Path "$localPath" -PathType Leaf) ? "$localPath" : ""
+      echo "local_config=$optLocalPath" >> $Env:GITHUB_OUTPUT
+  - name: Sync labels
+    uses: EndBug/label-sync@v2
+    with:
+      config-file: |
+        ${{ github.action_path }}/standard-labels.yml
+        ${{ steps.local-check.outputs.local_config }}
+      delete-other-labels: true
