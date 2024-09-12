@@ -21,14 +21,66 @@ jobs:
         uses: ./.github/get-oby-token
         with:
           key: ${{ secrets.OBY_KEY }}
+      - name: Get repo list
+        id: get-repos
+        uses: ./github/get-repo-list
+        with:
+          token: ${{ steps.get-token.outputs.token }}
+          exclude_forks: true
+          exclude_private: true
+          exclude_regex: |
+            ^oblivioncth/actions
+      - run: npm install js-yaml
+      - name: Generate sync config
+        uses: actions/github-script@v7
+        id: gen-config
+        env:
+          repos: ${{ steps.get-repos.outputs.repos }}
+          template: ./.github/files-sync-config.yml.in
+          gen: ./.github/files-sync-config.yml
+        with:
+          github-token: ${{ steps.get-token.outputs.token }}
+          script: |
+            // Modules
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            const assert = require('node:assert/strict');
+
+            // Files
+            const templatePath = process.env.template;
+            const generatedPath = process.env.gen;
+
+            // Read original yaml
+            const template = yaml.load(fs.readFileSync(templatePath, 'utf8'));
+            assert(template.patterns.length == 1, "More than one template pattern not accounted for!");
+            assert(template.patterns[0].repositories === null, "Template pattern repositories is not null!");
+
+            // Get input list
+            const repos = JSON.parse(process.env.repos);
+            assert(Array.isArray(repos), "Input repo list is not array!");
+            assert(repos.every(item => typeof item === 'string'), "Input repo list is not all strings!");
+
+            // Create repo list
+            template.patterns[0].repositories = repos.map((r) => r + '@dev');
+
+            // Write generated yaml
+            const generated = yaml.dump(template);
+            console.log(`Generated sync config:\n${generated}`);
+            fs.writeFileSync(generatedPath, generated, 'utf8');
       - name: Sync
-        uses: wadackel/files-sync-action@v3
+        id: sync
+        uses: oblivioncth/files-sync-action@target_branch
         with:
           github_token: ${{ steps.get-token.outputs.token }}
-          config_file: .github/files-sync-config.yml
-      - name: Sync 2
-        uses: BetaHuhn/repo-file-sync-action@v1
-        with:
-          gh_installation_token: ${{ steps.get-token.outputs.token }}
-          git_username: ${{ steps.get-token.outputs.username }}
-          git_email: ${{ steps.get-token.outputs.email }}
+      - name: Mark PRs as auto-merge
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ steps.get-token.outputs.token }}
+        run: |
+          $jsonUrls = '${{ steps.sync.outputs.pull_request_urls }}'
+          $urls = $jsonUrls | ConvertFrom-Json
+          foreach ($url in $urls) {
+            Write-Output "Setting auto-merge for '$url'"
+            gh pr merge --merge --auto --delete-branch "$url"
+          }
+

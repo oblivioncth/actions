@@ -1,0 +1,11 @@
+settings:
+  pull_request:
+    force: true
+    title: '🤖🔄 Sync files with `<%- repository %>`'
+    labels:
+      - 'common-sync'
+
+patterns:
+  - files:
+      - .github/release.yml
+    repositories:
