@@ -1,0 +1,92 @@
+name: 'Get Repository List'
+description: 'Retrieves the list of repositories (full name, i.e. "owner/repo") that are accessible by the input token'
+author: 'oblivioncth'
+inputs:
+  token:
+    required: true
+    description: The token to inspect. Results are limited to its access rights, and archived repos are never included
+  include_regex:
+    required: false
+    description: Newline delimited regex expresions that cause non-matching results to be excluded. Applied first.
+    default: ''
+  exclude_regex:
+    required: false
+    description: Newline delimited regex expresions that cause matching results to be excluded. Applied second.
+    default: ''
+  exclude_forks:
+    required: false
+    description: Whether or not to exclude forks
+    default: false
+  exclude_private:
+    required: false
+    description: Whether or not to exclude private repos
+    default: false
+outputs:
+  repos:
+    value: ${{ steps.query-and-filter.outputs.result }}
+    description: A JSON array of strings where each element is a full repository name.
+runs:
+  using: 'composite'
+  steps:
+  - uses: actions/github-script@v7
+    id: query-and-filter
+    env:
+      token: ${{ inputs.token }}
+      inc: ${{ inputs.include_regex }}
+      exc: ${{ inputs.exclude_regex }}
+      exc_forks: ${{ inputs.exclude_forks }}
+      exc_private: ${{ inputs.exclude_private }}
+    with:
+      github-token: ${{ inputs.token }}
+      script: |
+        // Get initial repo list
+        const usingInstallToken = process.env.token.startsWith("ghs_");
+        const affiliation = "owner,collaborator,organization_member";
+        const per_page = 30;
+        let repos = [];
+        
+        for (let page = 1; ; page++) {
+          const response = await (usingInstallToken
+          ? github.rest.apps.listReposAccessibleToInstallation({
+              page,
+              per_page,
+            })
+          : github.rest.repos.listForAuthenticatedUser({
+              affiliation,
+              page,
+              per_page,
+            }));
+          const repoSet = usingInstallToken ? response.data.repositories : response.data;
+          repos.push(...repoSet);
+
+          if (repoSet.length < per_page) {
+            break;
+          }
+        }
+        
+        // Handle non-name filters
+        repos = repos.filter((r) => 
+          !r.archived &&
+          (process.env.exc_forks != 'true' || !r.fork) &&
+          (process.env.exc_private != 'true' || !r.private)
+        )
+
+        // Filter using include regex if provided
+        const rawIncludes = process.env.inc;
+        if (rawIncludes) {
+          const regexIncludes = rawIncludes.split("\n").map((s) => new RegExp(s));
+          repos = repos.filter((repo) => regexIncludes.some((r) => r.test(repo.full_name)));
+        }
+        
+        // Filter using exclude regex if provided
+        const rawExcludes = process.env.exc;
+        if (rawExcludes) {
+          const regexExcludes = rawExcludes.split("\n").map((s) => new RegExp(s));
+          repos = repos.filter((repo) => !regexExcludes.some((r) => r.test(repo.full_name)));
+        }
+        
+        // Output just the full names
+        const repoNames = repos.map((r) => r.full_name);
+        console.log("Repositories: " + JSON.stringify(repoNames, null, 2));
+        return repoNames; // Action will encode this as JSON
+        
