@@ -7,5 +7,5 @@ runs:
   - name: Label PR
     uses: actions/labeler@v5
     with:
-        sync-labels: true
-        configuration-path: ${{ github.action_path }}/labeler.yml
+      sync-labels: true
+      configuration-path: ${{ github.action_path }}/labeler.yml

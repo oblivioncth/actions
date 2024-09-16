@@ -3,13 +3,13 @@ on:
     
 jobs:
   label-pr:
-    name: Label pull-request
+    name: Label issue
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
+      issues: write
     steps:
       - name: Sync labels
         uses: oblivioncth/actions/labels/sync-labels@v1
-      - name: Label via convention
-        uses: oblivioncth/actions/labels/label-pr-conventionally@v1
+
+# Just syncs for now
