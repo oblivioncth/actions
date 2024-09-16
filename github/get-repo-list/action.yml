@@ -76,7 +76,8 @@ runs:
         // Filter using include regex if provided
         const rawIncludes = process.env.inc;
         if (rawIncludes) {
-          const regexIncludes = rawIncludes.split("\n").map((s) => new RegExp(s));
+          const cleanedIncludes = rawIncludes.split("\n").filter((i) => i !== '');
+          const regexIncludes = cleanedIncludes.map((i) => new RegExp(i));
           repos = repos.filter((repo) => regexIncludes.some((r) => r.test(repo.full_name)));
         }
         console.log(`Post include regexes repo count: ${repos.length}`)
@@ -84,7 +85,8 @@ runs:
         // Filter using exclude regex if provided
         const rawExcludes = process.env.exc;
         if (rawExcludes) {
-          const regexExcludes = rawExcludes.split("\n").map((s) => new RegExp(s));
+          const cleanedExcludes = rawExcludes.split("\n").filter((i) => i !== '');
+          const regexExcludes = cleanedExcludes.map((i) => new RegExp(i));
           repos = repos.filter((repo) => !regexExcludes.some((r) => r.test(repo.full_name)));
         }
         console.log(`Post exclude regexes repo count: ${repos.length}`)
