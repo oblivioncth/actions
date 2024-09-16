@@ -1,0 +1,103 @@
+name: Sync Labels To Other Repos
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/labels.yml'
+  workflow_dispatch:
+
+jobs:
+  sync-files:
+    name: Sync Labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - name: Get oby token
+        id: get-token
+        uses: ./.github/get-oby-token
+        with:
+          key: ${{ secrets.OBY_KEY }}
+      - name: Get repo list
+        id: get-repos
+        uses: ./github/get-repo-list
+        with:
+          token: ${{ steps.get-token.outputs.token }}
+          exclude_forks: true
+      - run: npm install js-yaml github-label-sync
+      - name: Sync
+        uses: actions/github-script@v7
+        env:
+          repos: ${{ steps.get-repos.outputs.repos }}
+          config: ./.github/labels.yml
+          token: ${{ steps.get-token.outputs.token }}
+        with:
+          github-token: ${{ env.token }}
+          script: |
+            // Modules
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            const assert = require('node:assert/strict');
+            const labelSync = require('github-label-sync');
+
+            // Read config
+            const configPath = process.env.config;
+            const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
+            assert(Array.isArray(config.default), "Missing default label array!");
+            assert(config.default.length >= 1, "No default labels!");
+
+            // Get input list
+            const repos = JSON.parse(process.env.repos);
+            assert(Array.isArray(repos), "Input repo list is not array!");
+            assert(repos.every(item => typeof item === 'string'), "Input repo list is not all strings!");
+
+            // Label assistance
+            function mergeLabelEntries(baseEntries, newEntries) {
+                // Use a map to enforce overwrite of same named labels
+                const entryMap = new Map();
+                baseEntries.forEach(entry => entryMap.set(entry.name, entry));
+                newEntries.forEach(entry => entryMap.set(entry.name, entry));
+
+                // Convert the map back into array
+                return Array.from(entryMap.values());
+            }
+            function stripTagFromColors(labels) {
+                labels.forEach((l) => {
+                    const c = l.color;
+                    if(c.startsWith('#')) {
+                        l.color = c.substring(1);
+                    }
+                });
+            };
+
+            const defaultLabels = config.default;
+
+            // Handle each repo
+            const syncPromises = repos.map((r) => {
+                // Create repo specific label config
+                let repoLabels = defaultLabels;
+                const overrides = config[r];
+                if(overrides) {
+                    assert(Array.isArray(overrides), "Repo specific label entry must be an array!");
+                    repoLabels = mergeLabelEntries(repoLabels, overrides);
+                }
+                stripTagFromColors(repoLabels);
+
+                // Sync labels
+                console.log(`Synchronizing labels for '${r}'...`);
+                return labelSync({
+                    accessToken: process.env.token,
+                    repo: r,
+                    labels: repoLabels
+                }).then((diff) => {
+                    console.log(`Changes for '${r}':\n` + JSON.stringify(diff, null, 2));
+                });
+            });
+
+            Promise.all(syncPromises).then(() => {
+                console.log("All label synchronization tasks are complete.");
+            }).catch((error) => {
+                console.error("Error during label synchronization:");
+                throw error;
+            });
