@@ -44,7 +44,7 @@ runs:
         const affiliation = "owner,collaborator,organization_member";
         const per_page = 30;
         let repos = [];
-        
+
         for (let page = 1; ; page++) {
           const response = await (usingInstallToken
           ? github.rest.apps.listReposAccessibleToInstallation({
@@ -63,13 +63,15 @@ runs:
             break;
           }
         }
-        
+        console.log(`Initial repo count: ${repos.length}`)
+
         // Handle non-name filters
-        repos = repos.filter((r) => 
+        repos = repos.filter((r) =>
           !r.archived &&
           (process.env.exc_forks != 'true' || !r.fork) &&
           (process.env.exc_private != 'true' || !r.private)
         )
+        console.log(`Post non-name filters repo count: ${repos.length}`)
 
         // Filter using include regex if provided
         const rawIncludes = process.env.inc;
@@ -77,16 +79,20 @@ runs:
           const regexIncludes = rawIncludes.split("\n").map((s) => new RegExp(s));
           repos = repos.filter((repo) => regexIncludes.some((r) => r.test(repo.full_name)));
         }
-        
+        console.log(`Post include regexes repo count: ${repos.length}`)
+
         // Filter using exclude regex if provided
         const rawExcludes = process.env.exc;
         if (rawExcludes) {
           const regexExcludes = rawExcludes.split("\n").map((s) => new RegExp(s));
           repos = repos.filter((repo) => !regexExcludes.some((r) => r.test(repo.full_name)));
         }
-        
+        console.log(`Post exclude regexes repo count: ${repos.length}`)
+
         // Output just the full names
         const repoNames = repos.map((r) => r.full_name);
         console.log("Repositories: " + JSON.stringify(repoNames, null, 2));
+        if(repoNames.length < 1) {
+            throw new Error("No repositories matched!");
+        }
         return repoNames; // Action will encode this as JSON
-        
