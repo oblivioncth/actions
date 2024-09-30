@@ -8,4 +8,8 @@ settings:
 patterns:
   - files:
       - .github/release.yml
+    pull_request:
+      merge:
+        mode: auto
+        delete_branch: true
     repositories:
