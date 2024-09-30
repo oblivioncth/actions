@@ -1,6 +1,6 @@
 on:
   workflow_call:
-    
+
 jobs:
   label-pr:
     name: Label pull-request
@@ -9,7 +9,5 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - name: Sync labels
-        uses: oblivioncth/actions/labels/sync-labels@v1
       - name: Label via convention
         uses: oblivioncth/actions/labels/label-pr-conventionally@v1
