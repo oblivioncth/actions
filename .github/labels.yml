@@ -43,6 +43,10 @@ default:
     color: '#ffffff'
     description: This will not be worked on
 
+  - name: breaking
+    color: '#680a1b'
+    description: A change/removal of a feature or way in which something works
+
   - name: common-sync
     color: '#ff00dc'
     description: Sync PR with common repo
