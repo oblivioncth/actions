@@ -6,7 +6,7 @@ jobs:
     name: Label pull-request
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
     steps:
       - name: Label via convention
