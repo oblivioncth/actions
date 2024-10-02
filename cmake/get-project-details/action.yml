@@ -47,7 +47,7 @@ runs:
     run: |
       # Load main CMakeLists.txt
       $project_file = Get-Content -Raw "$Env:src/CMakeLists.txt"
-      
+
       # Get project name and version from project command
       #
       # The (?s) is a pwsh specific "miscellaneous construct" that enables single-line mode for
@@ -56,7 +56,7 @@ runs:
       if(!($project_file -match $rgx)){
         throw "Could not match project command!"
       }
-      
+
       $name = $Matches.name
       $nameLC = $name.ToLower() -replace '-','_'
       $nameUC = $name.ToUpper() -replace '-','_'
@@ -65,7 +65,7 @@ runs:
       echo "name_lc=$nameLC" >> $Env:GITHUB_OUTPUT
       echo "name_uc=$nameUC" >> $Env:GITHUB_OUTPUT
       echo "version=$version" >> $Env:GITHUB_OUTPUT
-      
+
       # Get project namespace from ob_standard_project_setup() command, fallback to name
       # if not present (which is what that function does itself)
       $rgx = '(?s)ob_standard_project_setup\(.*NAMESPACE\s+"?(?<namespace>[\w-]+).*\)'
@@ -75,19 +75,19 @@ runs:
       echo "namespace=$name" >> $Env:GITHUB_OUTPUT
       echo "namespace_lc=$namespaceLC" >> $Env:GITHUB_OUTPUT
       echo "namespace_uc=$namespaceUC" >> $Env:GITHUB_OUTPUT
-      
+
       # Qt check
-      $usesQt = (Select-String -Path "$Env:src/CMakeLists.txt" -Pattern ("find_package(Qt","ob_find_qt6_package(") -SimpleMatch -Quiet) ? 'true' : 'false'
+      $usesQt = (Select-String -Path "$Env:src/CMakeLists.txt" -Pattern ("find_package(Qt","ob_find_package_qt(") -SimpleMatch -Quiet) ? 'true' : 'false'
       echo "uses_qt=$usesQt" >> $Env:GITHUB_OUTPUT
-        
+
       # Doc check
       $hasDocs = (Get-ChildItem -Path "$Env:src" -Directory -Filter "*doc*") ? 'true' : 'false'
       echo "has_docs=$hasDocs" >> $Env:GITHUB_OUTPUT
-        
+
       # Test check
       $hasTests = (Get-ChildItem -Path "$Env:src" -Directory -Filter "*test*") ? 'true' : 'false'
       echo "has_tests=$hasTests" >> $Env:GITHUB_OUTPUT
-      
+
       # Log
       $details = @"
       Name: $name
@@ -99,4 +99,3 @@ runs:
       Has Tests : $hasTests
       "@
       Write-Host $details
-    
