@@ -12,7 +12,7 @@ on:
         required: false
         type: string
         default: ""
-        
+
 jobs:
   update-docs:
     name: Update gh-pages (if applicable)
@@ -60,7 +60,7 @@ jobs:
       id: page-deployment
       if: steps.doc-check.outputs.has_docs == 'true'
       uses: actions/deploy-pages@v4
-      
+
   create-release:
     name: Create GitHub release
     permissions:
@@ -95,7 +95,7 @@ jobs:
       run: |
         name="${{ github.event.repository.name }} Release v${{ steps.details.outputs.version }}"
         sfx="${{ inputs.name_suffix }}"
-        [ -n "$sfx" ] && name="name sfx"
+        [ -n "$sfx" ] && name="$name $sfx"
         echo "name=$name" >> $GITHUB_OUTPUT
     - name: Generate release
       uses: softprops/action-gh-release@v2
