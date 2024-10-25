@@ -7,5 +7,5 @@ enhancement:
 bug:
  - head-branch: ['^bugfix/']
  
-backend:
- - head-branch: ['^backend/']
+implementation:
+ - head-branch: ['^impl*/']
