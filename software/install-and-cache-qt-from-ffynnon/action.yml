@@ -17,7 +17,7 @@ inputs:
   access:
     required: true
     description: "Server access"
-  
+
 runs:
   using: 'composite'
   steps:
@@ -39,7 +39,7 @@ runs:
     with:
       path: ${{ inputs.path }}
       key: ${{ env._ffynnon_qt_config_id }}
-  
+
   - name: Install Qt
     if: steps.cache-qt.outputs.cache-hit != 'true'
     env:
@@ -49,9 +49,16 @@ runs:
     run: |
       # Path setup
       $download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
-      
+
       # Download
-      curl --anyauth "$Env:base_dir_url/$Env:_ffynnon_qt_subpath" -o "$download_path" --silent --show-error
-      
+      curl --anyauth "$Env:base_dir_url/$Env:_ffynnon_qt_subpath" -o "$download_path" -vsS --write-out "%{response_code}"
+
+      if($LASTEXITCODE -ne 0) {
+          echo "Download failed, exit code: $LASTEXITCODE"
+          echo "Response:"
+          Get-Content $download_path
+          throw "Failed to download Qt from Ffynnon!"
+      }
+
       # Extract
       7z x "$download_path" -o"${{ inputs.path }}"
