@@ -51,7 +51,7 @@ runs:
       $download_path = "${{ runner.temp }}" + "/qt_download.${{ env.qt_arch_ext }}"
 
       # Download
-      curl --anyauth "$Env:base_dir_url/$Env:_ffynnon_qt_subpath" -o "$download_path" -sS --write-out "%{response_code}"
+      curl --anyauth "$Env:base_dir_url/$Env:_ffynnon_qt_subpath" -o "$download_path" -sS --write-out "%{response_code}" --fail-with-body
 
       if($LASTEXITCODE -ne 0) {
           echo "Download failed, exit code: $LASTEXITCODE"
