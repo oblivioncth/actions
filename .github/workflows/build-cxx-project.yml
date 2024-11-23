@@ -10,14 +10,14 @@ on:
       qt_version: # Ignored if project doesn't use Qt
         required: false
         type: string
-        default: 6.7.2
+        default: 6.8.0
       doxygen_version: # Ignored if project doesn't have docs
         required: false
         type: string
         default: 1.10.0
       options_prefix: # For CMAKE options, defaults to uppercase project name
         required: false
-        type: string 
+        type: string
       pre_build_steps:
         required: false
         type: string
@@ -56,7 +56,7 @@ jobs:
             { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'shared' },
             { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'static' },
           ];
-          
+
           function getMatrixModifier(jsonString, allKeys) {
               function validateModifier(mod) {
                   const validKeys = ['os', 'compiler', 'linkage'];
@@ -67,43 +67,43 @@ jobs:
                   if(allKeys && Object.keys(mod).length != validKeys.length)
                     throw new Error(`Modifier object "${util.inspect(mod)}" did not contain all the required keys!`)
               }
-              
+
               console.log("Processing Modifier: " + jsonString);
               let parsedJson = JSON.parse(jsonString);
               if(!Array.isArray(parsedJson)) {
                   parsedJson = [parsedJson];
               }
               parsedJson.forEach(validateModifier);
-                
+
               return parsedJson;
           }
-          
+
           // Setup final runs
           let finalRuns = defaultRuns;
-          
+
           // Handle excludes
           const excludeStr = process.env.runs_exclude;
           if(excludeStr) {
               const excludeFilters = getMatrixModifier(excludeStr, false);
               finalRuns = defaultRuns.filter(run => {
-                return !excludeFilters.some(filter => 
+                return !excludeFilters.some(filter =>
                   Object.keys(filter).every(key => run[key] === filter[key])
                 );
               });
           }
-          
+
           // Handle includes
           const includeStr = process.env.runs_include;
           if(includeStr) {
               const includeEntries = getMatrixModifier(includeStr, true);
               finalRuns.push(...includeEntries);
           }
-          
+
           // Output
           const matrix = { include: finalRuns };
           core.setOutput('build_matrix', JSON.stringify(matrix)); // Compact print
           console.log("Matrix:\n" + JSON.stringify(matrix, null, 2)); // Pretty print
-    
+
   do-runs:
     name: Perform Runs
     needs: prepare-runs
@@ -150,7 +150,7 @@ jobs:
         libxkbcommon-dev
         libxkbcommon-x11-dev
         libxcb-*-dev
-        libharfbuzz-dev 
+        libharfbuzz-dev
         libdbus-1-dev
         libzstd-dev
         libbrotli-dev
@@ -244,43 +244,43 @@ jobs:
         $cxx_comp = "$Env:cxx_comp"
         $c_comp = "$cxx_comp"
         echo "Using cmake executable '$cmake'"
-      
+
         # Configure - Base
         $cmake_args = [System.Collections.Generic.List[object]]@('-G', "$Env:cmake_gen", '-S', "$Env:project_src_dir", '-B', "$Env:project_build_dir", "-DBUILD_SHARED_LIBS=$bsl")
-        
+
         # Configure - Compiler
         if($Env:is_linux -eq 'true') {
             $c_map = @{
                 "clang++-" = "clang-";
                 "g++-" = "gcc-";
             }
-            
+
             $c_map.GetEnumerator().ForEach({
                 $rgx= '^' + [regex]::Escape($_.Key)
                 $c_comp = $c_comp -replace $rgx, $_.Value
             })
             if($c_comp -eq $cxx_comp) { throw "C compiler not determined!" }
-            
+
             $cmake_args.Add("-DCMAKE_C_COMPILER=$c_comp")
             $cmake_args.Add("-DCMAKE_CXX_COMPILER=$cxx_comp")
         }
-        
+
         # Configure - Doc
         if($Env:has_docs -eq 'true') {
             $cmake_args.Add("-D${option_pfx}_DOCS=ON")
         }
-        
+
         # Configure - Tests
         if($Env:has_tests -eq 'true') {
             $cmake_args.Add("-D${option_pfx}_TESTS=ON")
         }
-        
+
         # Configure
-        echo "Configuring CMake..." 
+        echo "Configuring CMake..."
         echo "Args"
         echo "$cmake_args"
         & "$cmake" $cmake_args.ToArray()
-        
+
         # Build
         echo "Changing to build directory..."
         cd "$Env:project_build_dir"
@@ -311,4 +311,3 @@ jobs:
         name: ${{ env.current_artifact_name }}
         path: ${{ env.project_install_path }}
         if-no-files-found: error
-    
