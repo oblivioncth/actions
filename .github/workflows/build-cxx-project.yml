@@ -302,7 +302,8 @@ jobs:
       run: |
         $artifact_name=$((Get-ChildItem -Path "$Env:project_package_path" -Filter *.zip)[0].BaseName)
         if($Env:is_linux -eq 'true') {
-            $artifact_name += " [$Env:cxx_comp]"
+            $os_short = $(lsb_release -sr 2>/dev/null)
+            $artifact_name += " [$os_short;$Env:cxx_comp]"
         }
         echo "current_artifact_name=$artifact_name" >> $Env:GITHUB_ENV
     - name: Upload Project build artifact
