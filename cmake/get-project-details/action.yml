@@ -81,7 +81,7 @@ runs:
       echo "uses_qt=$usesQt" >> $Env:GITHUB_OUTPUT
 
       # Doc check
-      $hasDocs = (Get-ChildItem -Path "$Env:src" -Directory -Filter "*doc*") ? 'true' : 'false'
+      $hasDocs = (Test-Path -Path "$Env:src/doc*/CMakeLists.txt") ? 'true' : 'false'
       echo "has_docs=$hasDocs" >> $Env:GITHUB_OUTPUT
 
       # Test check
