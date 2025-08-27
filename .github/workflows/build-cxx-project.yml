@@ -47,10 +47,6 @@ jobs:
           const defaultRuns = [
             { os: 'windows-latest', compiler: 'msvc2022', linkage: 'shared' },
             { os: 'windows-latest', compiler: 'msvc2022', linkage: 'static' },
-            { os: 'ubuntu-20.04', compiler: 'g++-10', linkage: 'shared' },
-            { os: 'ubuntu-20.04', compiler: 'g++-10', linkage: 'static' },
-            { os: 'ubuntu-20.04', compiler: 'clang++-12', linkage: 'shared' },
-            { os: 'ubuntu-20.04', compiler: 'clang++-12', linkage: 'static' },
             { os: 'ubuntu-22.04', compiler: 'g++-12', linkage: 'shared' },
             { os: 'ubuntu-22.04', compiler: 'g++-12', linkage: 'static' },
             { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'shared' },
