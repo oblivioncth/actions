@@ -55,6 +55,10 @@ jobs:
             { os: 'ubuntu-22.04', compiler: 'g++-12', linkage: 'static' },
             { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'shared' },
             { os: 'ubuntu-22.04', compiler: 'clang++-14', linkage: 'static' },
+            { os: 'ubuntu-24.04', compiler: 'g++-14', linkage: 'shared' },
+            { os: 'ubuntu-24.04', compiler: 'g++-14', linkage: 'static' },
+            { os: 'ubuntu-24.04', compiler: 'clang++-18', linkage: 'shared' },
+            { os: 'ubuntu-24.04', compiler: 'clang++-18', linkage: 'static' },
           ];
 
           function getMatrixModifier(jsonString, allKeys) {
