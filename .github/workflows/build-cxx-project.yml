@@ -14,7 +14,7 @@ on:
       doxygen_version: # Ignored if project doesn't have docs
         required: false
         type: string
-        default: 1.10.0
+        default: 1.13.2
       options_prefix: # For CMAKE options, defaults to uppercase project name
         required: false
         type: string
