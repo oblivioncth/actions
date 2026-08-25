@@ -306,9 +306,9 @@ jobs:
         if($Env:is_linux -eq 'true') {
             $os_short = $(lsb_release -sr 2>/dev/null)
             $new_name = $artifact_info.Name + " [$os_short;$Env:cxx_comp]"
-            $artifact_info = $(Rename-Item -Path "$artifact_info.FullName" -NewName "$new_name" -PassThru)
+            $artifact_info = $(Rename-Item -Path $artifact_info.FullName -NewName "$new_name" -PassThru)
         }
-        echo "current_artifact_path=$artifact_info.FullName" >> $Env:GITHUB_OUTPUT
+        echo "current_artifact_path=$($artifact_info.FullName)" >> $Env:GITHUB_OUTPUT
     - name: Upload Project build artifact
       uses: actions/upload-artifact@v7
       with:
