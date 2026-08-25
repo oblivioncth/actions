@@ -311,11 +311,11 @@ jobs:
         echo "current_artifact_path=$($artifact_info.FullName)" >> $Env:GITHUB_OUTPUT
 
         # actions/upload-artifact resolves its path via @actions/glob, which treats
-        # *, ?, [, ] as pattern metacharacters. Escape those (only) so a literal
+        # *, ?, [ as pattern metacharacters. Escape those (only) so a literal
         # filename containing them (e.g. the "[24.04;g++-14]" type suffix we add above) is
         # matched as-is rather than parsed as a glob pattern.
 
-        $globSpecialChars = '*?[]'
+        $globSpecialChars = '*?['
         $escapedPath = ''
         foreach ($char in $artifact_info.FullName.ToCharArray()) {
             if ($globSpecialChars.Contains($char)) {
