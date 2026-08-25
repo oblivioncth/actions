@@ -35,7 +35,7 @@ runs:
 
   - name: Cache Qt Build
     id: cache-qt
-    uses: actions/cache@v4
+    uses: actions/cache@v6
     with:
       path: ${{ inputs.path }}
       key: ${{ env._ffynnon_qt_config_id }}

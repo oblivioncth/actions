@@ -24,7 +24,7 @@ jobs:
             throw "Invalid tag format: $tag"
         }
     - name: Checkout repo to use local actions
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Set git user to bot
       uses: ./git/set-global-git-user
     - name: Create/move corresponding major tag

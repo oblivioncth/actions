@@ -40,7 +40,7 @@ jobs:
       env:
         runs_include: "${{ inputs.runs_include }}"
         runs_exclude: "${{ inputs.runs_exclude }}"
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const util = require('util');
@@ -130,7 +130,7 @@ jobs:
         echo "project_install_path=$project_install_path" >> $Env:GITHUB_ENV
         echo "qt_cmake=${Env:qt_install_dir}/bin/qt-cmake" >> $Env:GITHUB_ENV
     - name: Checkout Project
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         path: ${{ env.project_src_suffix }}
         fetch-depth: 0 # Required for verbose versioning to work correctly
