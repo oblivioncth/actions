@@ -27,38 +27,83 @@ jobs:
     env:
       doc_artifacts_path: ${{ github.workspace }}/DocArtifacts
     steps:
-    - name: Check for docs
-      id: doc-check
+    - name: Get project details
+      id: proj-details
       uses: oblivioncth/actions/cmake/get-project-details@v1
     - name: Download built doc artifacts
-      if: steps.doc-check.outputs.has_docs == 'true'
+      if: steps.proj-details.outputs.has_docs == 'true'
       uses: actions/download-artifact@v8
       with:
         pattern: "${{ inputs.doc_artifact_pattern }}"
         path: ${{ env.doc_artifacts_path }}
         run-id: ${{ inputs.artifacts_run_id }}
         github-token: ${{ github.token }}
-    - name: Select specific doc folder
+    - name: Determine doc folder path
       id: doc-folder
-      if: steps.doc-check.outputs.has_docs == 'true'
+      if: steps.proj-details.outputs.has_docs == 'true'
       shell: pwsh
       run: |
-        $doc_folder = Get-ChildItem "$Env:doc_artifacts_path" -Directory | Select-Object -First 1
-        if(-not $doc_folder) {
+        $doc_artifact = Get-ChildItem "$Env:doc_artifacts_path" -Directory | Select-Object -First 1
+        if(-not $doc_artifact) {
             throw "No doc artifact available!"
         }
+
+        $doc_folder = $null
+
+        ### Try several approaches
+        # 1) Exact expected path
+        $project_name = "${{ steps.proj-details.outputs.name }}"
+        $candidate = Join-Path $doc_artifact "share/doc/$project_name/html"
+        if (Test-Path -LiteralPath $candidate -PathType Container) {
+            $doc_folder = $candidate
+        }
+
+        # 2) share/doc/<something>/html (one level deep, name mismatch case)
+        if (-not $doc_folder) {
+            $shareDoc = Join-Path $doc_artifact "share/doc"
+            if (Test-Path -LiteralPath $shareDoc -PathType Container) {
+                $match = Get-ChildItem -LiteralPath $shareDoc -Directory -ErrorAction SilentlyContinue |
+                    ForEach-Object {
+                        $htmlPath = Join-Path $_.FullName "html"
+                        if (Test-Path -LiteralPath $htmlPath -PathType Container) { $htmlPath }
+                    } |
+                    Select-Object -First 1
+
+                if ($match) {
+                    $doc_folder = $match
+                }
+            }
+        }
+
+        # 3) Recursive search for any 'html' folder containing index.html
+        if (-not $doc_folder) {
+            $match = Get-ChildItem -LiteralPath $doc_artifact -Directory -Recurse -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -eq "html" } |
+                Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "index.html") -PathType Leaf } |
+                Select-Object -First 1 -ExpandProperty FullName
+
+            if ($match) {
+                $doc_folder = $match
+            }
+        }
+
+        # 4) Nothing found
+        if (-not $doc_folder) {
+            throw "No docs found within doc artifact!"
+        }
+
         echo "doc_folder=$doc_folder" >> $Env:GITHUB_OUTPUT
     - name: Setup pages
-      if: steps.doc-check.outputs.has_docs == 'true'
+      if: steps.proj-details.outputs.has_docs == 'true'
       uses: actions/configure-pages@v4
     - name: Upload pages artifact
-      if: steps.doc-check.outputs.has_docs == 'true'
+      if: steps.proj-details.outputs.has_docs == 'true'
       uses: actions/upload-pages-artifact@v3
       with:
-        path: ${{ steps.doc-folder.outputs.doc_folder }}/doc/html
+        path: ${{ steps.doc-folder.outputs.doc_folder }}
     - name: Deploy pages artifact
       id: page-deployment
-      if: steps.doc-check.outputs.has_docs == 'true'
+      if: steps.proj-details.outputs.has_docs == 'true'
       uses: actions/deploy-pages@v4
 
   create-release:
