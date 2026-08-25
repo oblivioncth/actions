@@ -297,20 +297,21 @@ jobs:
         echo "Packaging Project..."
         cpack -C "Release"
         echo "Build complete."
-    - name: Get Project Artifact Name
-      id: get_artifact_name
+    - name: Get Project Artifact Path
+      id: get_artifact_path
       env:
         cxx_comp: ${{ matrix.compiler }}
       run: |
-        $artifact_name=$((Get-ChildItem -Path "$Env:project_package_path" -Filter *.zip)[0].BaseName)
+        $artifact_info=$((Get-ChildItem -Path "$Env:project_package_path" -Filter *.zip)[0])
         if($Env:is_linux -eq 'true') {
             $os_short = $(lsb_release -sr 2>/dev/null)
-            $artifact_name += " [$os_short;$Env:cxx_comp]"
+            $new_name = $artifact_info.Name + " [$os_short;$Env:cxx_comp]"
+            $artifact_info = $(Rename-Item -Path "$artifact_info.FullName" -NewName "$new_name" -PassThru)
         }
-        echo "current_artifact_name=$artifact_name" >> $Env:GITHUB_ENV
+        echo "current_artifact_path=$artifact_info.FullName" >> $Env:GITHUB_OUTPUT
     - name: Upload Project build artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
-        name: ${{ env.current_artifact_name }}
-        path: ${{ env.project_install_path }}
+        path: ${{ steps.get_artifact_path.outputs.current_artifact_path }}
+        archive: false # This means the filename will be used as the artifact name so no name arg is needed
         if-no-files-found: error

@@ -32,7 +32,7 @@ jobs:
       uses: oblivioncth/actions/cmake/get-project-details@v1
     - name: Download built doc artifacts
       if: steps.doc-check.outputs.has_docs == 'true'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         pattern: "${{ inputs.doc_artifact_pattern }}"
         path: ${{ env.doc_artifacts_path }}
@@ -69,27 +69,21 @@ jobs:
     runs-on: ubuntu-latest
     env:
       artifacts_path: ${{ github.workspace }}/Artifacts
-      zips_path: ${{ github.workspace }}/Zips
     steps:
     - name: Get project details
       id: details
       uses: oblivioncth/actions/cmake/get-project-details@v1
-    - name: Download built project artifacts
-      uses: actions/download-artifact@v4
+    - name: Download built project artifacts (keep zips)
+      uses: actions/download-artifact@v8
       with:
         path: ${{ env.artifacts_path }}
+        skip-decompress: true
         run-id: ${{ inputs.artifacts_run_id }}
         github-token: ${{ github.token }}
-    - name: Zip up release artifacts
+    - name: Remove 'github-pages' artifact if present
       shell: pwsh
       run: |
-        $artifact_folders = Get-ChildItem -Directory -Path "${{ env.artifacts_path }}" -Exclude "github-pages"
-        foreach($art_dir in $artifact_folders)
-        {
-          $name = $art_dir.name
-          $path = $art_dir.fullname
-          7z a "${{ env.zips_path }}/${name}.zip" "${path}/*"
-        }
+        Remove-Item -Path "${{ env.artifacts_path }}/github-pages.zip" -ErrorAction SilentlyContinue
     - name: Form release name
       id: name
       run: |
@@ -98,11 +92,11 @@ jobs:
         [ -n "$sfx" ] && name="$name $sfx"
         echo "name=$name" >> $GITHUB_OUTPUT
     - name: Generate release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         name: "${{ steps.name.outputs.name }}"
         tag_name: "v${{ steps.details.outputs.version }}"
         fail_on_unmatched_files: true
         generate_release_notes: true
         files: |
-          ${{ env.zips_path }}/*.zip
+          ${{ env.artifacts_path }}/*.zip
