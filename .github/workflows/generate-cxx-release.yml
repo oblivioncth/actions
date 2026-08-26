@@ -123,6 +123,7 @@ jobs:
       with:
         path: ${{ env.artifacts_path }}
         skip-decompress: true
+        merge-multiple: true # Same dir instead of individual folders (they're zips anyway)
         run-id: ${{ inputs.artifacts_run_id }}
         github-token: ${{ github.token }}
     - name: Remove 'github-pages' artifact if present
