@@ -95,16 +95,16 @@ jobs:
         echo "doc_folder=$doc_folder" >> $Env:GITHUB_OUTPUT
     - name: Setup pages
       if: steps.proj-details.outputs.has_docs == 'true'
-      uses: actions/configure-pages@v4
+      uses: actions/configure-pages@v6
     - name: Upload pages artifact
       if: steps.proj-details.outputs.has_docs == 'true'
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v5
       with:
         path: ${{ steps.doc-folder.outputs.doc_folder }}
     - name: Deploy pages artifact
       id: page-deployment
       if: steps.proj-details.outputs.has_docs == 'true'
-      uses: actions/deploy-pages@v4
+      uses: actions/deploy-pages@v5
 
   create-release:
     name: Create GitHub release
