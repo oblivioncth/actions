@@ -305,7 +305,7 @@ jobs:
         $artifact_info=$((Get-ChildItem -Path "$Env:project_package_path" -Filter *.zip)[0])
         if($Env:is_linux -eq 'true') {
             $os_short = $(lsb_release -sr 2>/dev/null)
-            $new_name = $artifact_info.BaseName + "_[$os_short;$Env:cxx_comp]" + $artifact_info.Extension
+            $new_name = $artifact_info.BaseName + "_[$os_short_$Env:cxx_comp]" + $artifact_info.Extension
             $artifact_info = $(Rename-Item -Path $artifact_info.FullName -NewName "$new_name" -PassThru)
         }
         echo "current_artifact_path=$($artifact_info.FullName)" >> $Env:GITHUB_OUTPUT
