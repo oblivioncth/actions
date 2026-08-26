@@ -14,8 +14,24 @@ on:
         default: ""
 
 jobs:
+  project-details:
+    name: Get project details
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.proj-details.outputs.name }}
+      version: ${{ steps.proj-details.outputs.version }}
+      has_docs: ${{ steps.proj-details.outputs.has_docs }}
+    steps:
+    - name: Get project details
+      id: proj-details
+      uses: oblivioncth/actions/cmake/get-project-details@v1
+
   update-docs:
     name: Update gh-pages (if applicable)
+    needs: project-details
+    if: needs.project-details.outputs.has_docs == 'true'
     permissions:
       contents: read
       pages: write
@@ -27,11 +43,7 @@ jobs:
     env:
       doc_artifacts_path: ${{ github.workspace }}/DocArtifacts
     steps:
-    - name: Get project details
-      id: proj-details
-      uses: oblivioncth/actions/cmake/get-project-details@v1
     - name: Download built doc artifacts
-      if: steps.proj-details.outputs.has_docs == 'true'
       uses: actions/download-artifact@v8
       with:
         pattern: "${{ inputs.doc_artifact_pattern }}"
@@ -40,7 +52,6 @@ jobs:
         github-token: ${{ github.token }}
     - name: Determine doc folder path
       id: doc-folder
-      if: steps.proj-details.outputs.has_docs == 'true'
       shell: pwsh
       run: |
         $doc_artifact = Get-ChildItem "$Env:doc_artifacts_path" -Directory | Select-Object -First 1
@@ -52,7 +63,7 @@ jobs:
 
         ### Try several approaches
         # 1) Exact expected path
-        $project_name = "${{ steps.proj-details.outputs.name }}"
+        $project_name = "${{ needs.project-details.outputs.name }}"
         $candidate = Join-Path $doc_artifact "share/doc/$project_name/html"
         if (Test-Path -LiteralPath $candidate -PathType Container) {
             $doc_folder = $candidate
@@ -94,20 +105,18 @@ jobs:
 
         echo "doc_folder=$doc_folder" >> $Env:GITHUB_OUTPUT
     - name: Setup pages
-      if: steps.proj-details.outputs.has_docs == 'true'
       uses: actions/configure-pages@v6
     - name: Upload pages artifact
-      if: steps.proj-details.outputs.has_docs == 'true'
       uses: actions/upload-pages-artifact@v5
       with:
         path: ${{ steps.doc-folder.outputs.doc_folder }}
     - name: Deploy pages artifact
       id: page-deployment
-      if: steps.proj-details.outputs.has_docs == 'true'
       uses: actions/deploy-pages@v5
 
   create-release:
     name: Create GitHub release
+    needs: project-details
     permissions:
       actions: read
       contents: write
@@ -115,15 +124,12 @@ jobs:
     env:
       artifacts_path: ${{ github.workspace }}/Artifacts
     steps:
-    - name: Get project details
-      id: details
-      uses: oblivioncth/actions/cmake/get-project-details@v1
     - name: Download built project artifacts (keep zips)
       uses: actions/download-artifact@v8
       with:
         path: ${{ env.artifacts_path }}
         skip-decompress: true
-        merge-multiple: true # Same dir instead of individual folders (they're zips anyway)
+        merge-multiple: true
         run-id: ${{ inputs.artifacts_run_id }}
         github-token: ${{ github.token }}
     - name: Remove 'github-pages' artifact if present
@@ -133,7 +139,7 @@ jobs:
     - name: Form release name
       id: name
       run: |
-        name="${{ github.event.repository.name }} Release v${{ steps.details.outputs.version }}"
+        name="${{ github.event.repository.name }} Release v${{ needs.project-details.outputs.version }}"
         sfx="${{ inputs.name_suffix }}"
         [ -n "$sfx" ] && name="$name $sfx"
         echo "name=$name" >> $GITHUB_OUTPUT
@@ -141,7 +147,7 @@ jobs:
       uses: softprops/action-gh-release@v3
       with:
         name: "${{ steps.name.outputs.name }}"
-        tag_name: "v${{ steps.details.outputs.version }}"
+        tag_name: "v${{ needs.project-details.outputs.version }}"
         fail_on_unmatched_files: true
         generate_release_notes: true
         files: |
