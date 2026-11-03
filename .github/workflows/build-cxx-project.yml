@@ -225,7 +225,7 @@ jobs:
         uses: ${{ env.pre_action_sub_path }}
     - name: Setup Dev Environment [Windows]
       if: env.is_win == 'true'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: TheMrMilchmann/setup-msvc-dev@v4
     - name: Build Project
       working-directory: ${{ env.project_src_dir }}
       env:
