@@ -226,6 +226,8 @@ jobs:
     - name: Setup Dev Environment [Windows]
       if: env.is_win == 'true'
       uses: TheMrMilchmann/setup-msvc-dev@v4
+      with:
+        arch: x64
     - name: Build Project
       working-directory: ${{ env.project_src_dir }}
       env:
